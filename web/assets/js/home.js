@@ -24,6 +24,9 @@ import { config, tools as fetchTools, API_BASE } from "./api.js";
 
 initLayout({ active: "" });
 
+const healthLink = document.getElementById("health-link");
+if (healthLink) healthLink.href = `${API_BASE}/api/health`;
+
 const HOME_PICKS = [
   "merge",
   "split",
