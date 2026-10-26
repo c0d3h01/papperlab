@@ -6,9 +6,9 @@ PaperLab is an independent, open-source PDF workshop: a Go API and a static, van
 
 - Organise: merge, split, remove pages, extract pages, organise, rotate, crop, N-up, booklet.
 - Optimise: compress, repair, OCR, PDF/A, flatten.
-- Convert: PDF to Word/PowerPoint/Excel/JPG, and Word/PowerPoint/Excel/JPG/HTML to PDF.
-- Edit: edit, sign, redact, watermark, page numbers.
-- Security: protect, unlock, compare.
+- Convert: PDF to Word/PowerPoint/Excel/JPG/text/Markdown, extract images; Word/PowerPoint/Excel/images/HTML to PDF; scan to PDF.
+- Edit: edit, sign, watermark, page numbers, metadata.
+- Security: protect, unlock, redact, compare.
 - Forms: fill, extract form data.
 - Intelligence: summarise, chat with PDF, translate.
 
@@ -16,7 +16,7 @@ The UI also has a visual Studio (edit, sign, organise, redact, crop) and a groun
 
 ## Requirements
 
-- Go 1.27+
+- Go 1.27.2+
 - Poppler (`pdftoppm`, `pdftotext`, `pdfinfo`)
 - Ghostscript
 - qpdf
@@ -24,7 +24,7 @@ The UI also has a visual Studio (edit, sign, organise, redact, crop) and a groun
 - LibreOffice (optional, for high-fidelity Office conversion)
 - Chromium/Chrome (optional, for HTML/URL to PDF)
 
-The API reports missing optional engines as unavailable.
+Tools whose required engine is missing are marked unavailable in `/api/tools`.
 
 ## Run locally
 
@@ -69,12 +69,14 @@ Open <http://localhost:8080>. Jobs are stored in the `paperlab-data` volume. The
 | `PAPERLAB_TRUSTED_PROXIES` | empty | IPs/CIDRs of reverse proxies allowed to set `X-Forwarded-For`. |
 | `PAPERLAB_RATE_LIMIT_PER_MIN` | `240` | Per-IP request limit. |
 | `PAPERLAB_ALLOW_LOCAL_URLS` | `false` | Allow HTML-to-PDF to fetch private/local URLs. |
+| `PAPERLAB_CHROME_PATH` | auto-detected | Chromium/Chrome binary for HTML/URL to PDF. |
+| `PAPERLAB_LIBREOFFICE_PATH` | auto-detected | LibreOffice binary for Office conversion. |
 | `PAPERLAB_AI_BASE_URL` | empty | OpenAI-compatible API base URL. |
 | `PAPERLAB_AI_API_KEY` | empty | AI provider key. |
 | `PAPERLAB_AI_MODEL` | `gpt-4o-mini` | AI model name. |
 | `PAPERLAB_LIBRETRANSLATE_URL` | empty | LibreTranslate base URL. |
 
-Without an AI provider, summaries and chat answers use local extraction and retrieval. Without LibreOffice, Office files use the built-in native fallbacks. Translation requires an AI provider or LibreTranslate; otherwise the tool is reported as unavailable.
+Without an AI provider, summaries and chat answers use local extraction and retrieval. Without LibreOffice, `.docx`, `.pptx`, `.xlsx` and `.csv` use the native fallbacks; legacy `.doc`, `.ppt`, `.xls` and OpenDocument files need LibreOffice. Translation requires an AI provider or LibreTranslate; otherwise the tool is reported as unavailable.
 
 ## API
 
@@ -95,6 +97,8 @@ Without an AI provider, summaries and chat answers use local extraction and retr
 
 ```sh
 gofmt -l cmd internal scripts
+go mod tidy
+git diff --exit-code go.mod go.sum
 go vet ./...
 go test -race ./...
 go build ./...
