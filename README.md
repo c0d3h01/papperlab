@@ -120,6 +120,8 @@ cloudflared tunnel run paperlab-api
 
 For a quick test, `cloudflared tunnel --url http://127.0.0.1:8080` prints a temporary public URL. Cloudflare Containers is an alternative if you want Cloudflare to run the container itself; keep the same container port and health endpoint.
 
+Set `PAPERLAB_TRUSTED_PROXIES` to the address cloudflared connects from (for example `127.0.0.1` when it runs on the same host) so rate limiting sees the real client IP from `X-Forwarded-For`. Leave it empty when the API is directly exposed. Also keep an egress firewall in front of the container if users can submit arbitrary HTML or URLs: HTML-to-PDF is an outbound fetch primitive, and `PAPERLAB_ALLOW_LOCAL_URLS=false` only blocks the initial URL and redirects, not every subresource Chrome may request.
+
 ## Configuration
 
 `.env.example` is the local template and `.env.production` is the production template. Copy either to `.env`; the real `.env` is ignored by git, so keys never belong in the templates.
@@ -138,6 +140,7 @@ For a split Pages deployment, start from `.env.production`, set `PAPERLAB_CORS_O
 | `PAPERLAB_JOB_TIMEOUT_MIN` | `20` | Processing timeout. |
 | `PAPERLAB_API_KEY` | empty | Optional `X-API-Key` / Bearer token. |
 | `PAPERLAB_CORS_ORIGINS` | `*` | Comma-separated allowed front-end origins. |
+| `PAPERLAB_TRUSTED_PROXIES` | empty | IPs/CIDRs of reverse proxies allowed to set `X-Forwarded-For`. Set this behind Cloudflare Tunnel so rate limits use real client IPs. |
 | `PAPERLAB_RATE_LIMIT_PER_MIN` | `240` | Per-IP request limit. |
 | `PAPERLAB_CHROME_PATH` | auto | Chromium/Chrome executable. |
 | `PAPERLAB_LIBREOFFICE_PATH` | auto | LibreOffice executable. |
@@ -163,8 +166,10 @@ Without an AI provider, summaries and chat answers use local extraction and retr
 ## Verification
 
 ```sh
-go build ./...
+gofmt -l cmd internal scripts
 go vet ./...
+go test -race ./...
+go build ./...
 ```
 
 The API smoke checks used during development exercise the tools with `testdata/sample.pdf`, `testdata/form.pdf`, and the Office/image fixtures. The Docker image is the full-fidelity target because it includes LibreOffice and Chromium; a bare local Go install may report those engines as unavailable.
@@ -172,3 +177,17 @@ The API smoke checks used during development exercise the tools with `testdata/s
 ## Privacy and safety
 
 Files are written to a private per-job directory and removed after the configured TTL. There is no account system or database. Redaction rasterises affected pages so text is not left underneath the black boxes. Signing adds an electronic signature and an audit JSON file; it is not a qualified digital certificate.
+
+PaperLab is not a hard multi-tenant sandbox. The native PDF engines run as separate processes under an unprivileged container user, but they are not individually sandboxed. Set `PAPERLAB_API_KEY`, narrow `PAPERLAB_CORS_ORIGINS`, keep `PAPERLAB_ALLOW_LOCAL_URLS=false`, and put an egress firewall in front of the API before exposing it to untrusted users. See `SECURITY.md` for the full threat model and deployment checklist.
+
+## Contributing
+
+Bug reports, tests, documentation and focused code changes are welcome. Read `CONTRIBUTING.md` before opening a pull request. By contributing, you agree that your contribution is licensed under Apache-2.0.
+
+Security problems should be reported privately as described in `SECURITY.md`, not in a public issue.
+
+## License
+
+PaperLab is licensed under the Apache License 2.0. The full text is in `LICENSE`; attribution notices are in `NOTICE`. Third-party components, including the bundled fonts, PDF.js and the Go modules, are listed in `THIRD_PARTY_NOTICES.md`. The Docker image also contains Ghostscript (AGPL-3.0), Poppler (GPL-2.0), LibreOffice (MPL-2.0), Tesseract, qpdf and Chromium; see that file before republishing the image.
+
+PaperLab is an independent project and is not affiliated with iLovePDF or any other PDF brand.
