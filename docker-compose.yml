@@ -3,7 +3,9 @@ services:
     build: .
     image: paperlab-api
     ports:
-      - "8080:8080"
+      # Loopback only: Cloudflare Tunnel runs on the host and connects here.
+      # Change to "8080:8080" only if you need LAN access.
+      - "127.0.0.1:8080:8080"
     environment:
       PAPERLAB_ADDR: ":8080"
       PAPERLAB_DATA_DIR: "/data"
