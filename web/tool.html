@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tool · PaperLab</title>
+  <meta name="description" content="Run a PaperLab PDF tool: upload a file, set the job, and download the result.">
+  <meta name="theme-color" content="#eef0ee">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script type="module" src="assets/js/tool-page.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="site-header"></div>
+
+  <main id="main" class="tool-page">
+    <section class="tool-hero">
+      <div class="page-shell">
+        <nav class="breadcrumb" aria-label="Breadcrumb" id="tool-breadcrumb"></nav>
+        <div class="tool-hero-main" id="tool-hero"></div>
+      </div>
+    </section>
+
+    <div class="page-shell">
+      <div class="tool-layout">
+        <div class="tool-main">
+          <div id="tool-unavailable"></div>
+          <div id="tool-form-area"></div>
+          <div id="tool-result-area" aria-live="polite"></div>
+        </div>
+        <aside class="tool-aside" id="tool-aside" aria-label="About this tool"></aside>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The toolbox · PaperLab</title>
+  <meta name="description" content="All 41 PaperLab PDF tools: merge, split, organise, compress, repair, OCR, convert, edit, sign, redact, protect, fill forms, summarise and ask questions.">
+  <meta name="theme-color" content="#eef0ee">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script type="module" src="assets/js/catalog.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="catalog-hero">
+      <div class="page-shell">
+        <div class="catalog-head">
+          <div>
+            <span class="eyebrow">The toolbox · 41 tools</span>
+            <h1 class="catalog-title">Find the right<br><em>move for the page.</em></h1>
+          </div>
+          <div>
+            <p class="catalog-lede">
+              Everything PaperLab can do, arranged the way the work arrives.
+              Search by task, browse a family, or start from the file you already have.
+            </p>
+            <label class="catalog-search" for="catalog-q">
+              <span data-icon="search" data-icon-size="18"></span>
+              <input id="catalog-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search tools: merge, OCR, redact, sign…" aria-label="Search tools">
+              <span class="search-hint">/ to focus</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="catalog-bar">
+      <div class="page-shell">
+        <div class="catalog-bar-inner" id="catalog-filters" aria-label="Filter tools"></div>
+      </div>
+    </div>
+
+    <section class="catalog-body">
+      <div class="page-shell">
+        <div class="catalog-meta">
+          <span id="catalog-count">Loading the inventory…</span>
+          <label class="check-row" style="padding:0">
+            <input id="catalog-available" type="checkbox">
+            <span>Only tools ready on this server</span>
+          </label>
+        </div>
+        <div id="catalog-groups"></div>
+        <div id="catalog-empty" class="catalog-empty" hidden>
+          <span data-icon="search" data-icon-size="34"></span>
+          <h2>Nothing in that drawer.</h2>
+          <p>Try a broader word, or clear the filters to see all 41 tools.</p>
+          <button class="btn btn-quiet" type="button" id="catalog-reset" style="margin-top:18px">Clear filters</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>

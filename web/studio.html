@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Studio · PaperLab</title>
+  <meta name="description" content="PaperLab Studio: edit, sign, organise, redact and crop PDF pages visually in your browser, then export a baked PDF.">
+  <meta name="theme-color" content="#eef0ee">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/studio.css">
+  <script type="module" src="assets/js/studio.js"></script>
+</head>
+<body id="top" class="studio-body">
+  <a class="skip-link" href="#studio-stage">Skip to the canvas</a>
+  <div id="site-header"></div>
+
+  <main id="studio" class="studio-page">
+    <div class="studio-app">
+      <div class="studio-topbar" id="studio-topbar"></div>
+      <div class="studio-workspace">
+        <aside class="studio-rail" id="studio-rail" aria-label="Studio tools"></aside>
+        <section class="studio-stage" id="studio-stage">
+          <div class="studio-toolbar" id="studio-toolbar"></div>
+          <div class="studio-scroll" id="studio-scroll">
+            <div class="studio-canvas-wrap" id="studio-canvas-wrap" hidden>
+              <canvas id="studio-canvas" aria-label="PDF page"></canvas>
+              <div class="studio-overlay" id="studio-overlay" tabindex="0" aria-label="Page editing surface"></div>
+              <div class="studio-page-shadow" aria-hidden="true"></div>
+            </div>
+            <div class="studio-organize" id="studio-organize" hidden></div>
+            <div class="studio-empty" id="studio-empty"></div>
+          </div>
+        </section>
+        <aside class="studio-inspector" id="studio-inspector" aria-label="Inspector"></aside>
+      </div>
+    </div>
+    <div class="studio-export" id="studio-export" hidden aria-live="polite"></div>
+    <input type="file" id="studio-file-input" accept=".pdf,application/pdf" hidden>
+    <input type="file" id="studio-image-input" accept="image/png,image/jpeg,image/webp" hidden>
+  </main>
+
+  <div id="site-footer"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "PaperLab · PDF workshop",
+  "short_name": "PaperLab",
+  "description": "An independent PDF workshop: 41 tools for merging, converting, editing, signing, redacting and asking documents questions.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#eceeeb",
+  "theme_color": "#eceeeb",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

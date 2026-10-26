@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat with PDF · PaperLab</title>
+  <meta name="description" content="Ask a PDF questions and get answers grounded in the document, with page citations. PaperLab keeps the conversation going without uploading your file anywhere else.">
+  <meta name="theme-color" content="#eef0ee">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script type="module" src="assets/js/chat.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#chat-main">Skip to the conversation</a>
+  <div id="site-header"></div>
+
+  <main id="main" class="chat-page">
+    <div class="chat-shell">
+      <aside class="chat-side" id="chat-side" aria-label="Document and suggestions"></aside>
+      <section class="chat-main" id="chat-main">
+        <header class="chat-head" id="chat-head"></header>
+        <div class="chat-log" id="chat-log" aria-live="polite" aria-relevant="additions text"></div>
+        <form class="chat-composer" id="chat-form">
+          <div class="chat-input-wrap">
+            <textarea class="chat-input" id="chat-input" rows="1" placeholder="Open a PDF, then ask a question…" aria-label="Ask the document a question" disabled></textarea>
+            <button class="btn btn-primary chat-send" id="chat-send" type="submit" aria-label="Send question" disabled>
+              <span data-icon="arrow" data-icon-size="17"></span>
+            </button>
+          </div>
+          <div class="chat-composer-foot">
+            <span id="chat-status">No document open</span>
+            <span>Enter to send · Shift + Enter for a new line</span>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="false"></div>
+  <input type="file" id="chat-file-input" accept=".pdf,application/pdf" hidden>
+</body>
+</html>

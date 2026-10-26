@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PaperLab · Every PDF task, on one quiet workbench</title>
+  <meta name="description" content="PaperLab is an independent PDF workshop: merge, split, compress, convert, edit, sign, redact, OCR and ask questions. 41 tools, no account, files expire automatically.">
+  <meta name="theme-color" content="#eef0ee">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script type="module" src="assets/js/home.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="hero">
+      <div class="hero-grid page-shell">
+        <div class="hero-copy">
+          <div class="hero-kicker">
+            <span class="eyebrow">Independent PDF workshop</span>
+            <span class="hero-rule" aria-hidden="true"></span>
+            <span class="mono micro">41 tools / no account</span>
+          </div>
+          <h1 class="hero-title">
+            Every PDF task,<br>
+            <span class="hero-title-em">on one quiet</span><br>
+            workbench.
+          </h1>
+          <p class="hero-lede">
+            Merge, convert, compress, sign, redact, OCR and interrogate your documents.
+            A complete set of tools with the calm of a well-organised print shop — and none of the noise.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="tools.html">
+              Browse the toolbox
+              <span class="btn-arrow" data-icon="arrow"></span>
+            </a>
+            <a class="btn btn-quiet btn-lg" href="studio.html">
+              <span data-icon="studio"></span>
+              Open the studio
+            </a>
+          </div>
+          <dl class="hero-stats">
+            <div><dt>Tools</dt><dd>41</dd></div>
+            <div><dt>Sign-ups</dt><dd>Zero</dd></div>
+            <div><dt>File expiry</dt><dd>2 hrs</dd></div>
+            <div><dt>Watermarks</dt><dd>None</dd></div>
+          </dl>
+        </div>
+
+        <div class="hero-board" aria-labelledby="quick-title">
+          <span class="reg-mark reg-tl" aria-hidden="true"></span>
+          <span class="reg-mark reg-tr" aria-hidden="true"></span>
+          <span class="reg-mark reg-bl" aria-hidden="true"></span>
+          <span class="reg-mark reg-br" aria-hidden="true"></span>
+          <div class="board-head">
+            <div>
+              <span class="eyebrow" id="quick-title">Start here</span>
+              <h2 class="board-title">Drop a file.<br>We will find the right tool.</h2>
+            </div>
+            <span class="board-seal mono">PL / 001</span>
+          </div>
+          <div id="quick-drop" class="quick-drop"></div>
+          <div id="quick-suggestions" class="quick-suggestions" aria-live="polite"></div>
+          <div class="board-foot">
+            <span class="mono micro">PDF · DOCX · PPTX · XLSX · JPG · HTML</span>
+            <a class="text-link" href="tools.html">Or browse all 41 tools <span data-icon="arrow"></span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-ticker" aria-hidden="true">
+        <div class="ticker-track">
+          <span>MERGE</span><i></i><span>SPLIT</span><i></i><span>COMPRESS</span><i></i><span>SIGN</span><i></i><span>REDACT</span><i></i><span>OCR</span><i></i><span>CONVERT</span><i></i><span>SUMMARISE</span><i></i><span>ORGANISE</span><i></i><span>PROTECT</span><i></i>
+          <span>MERGE</span><i></i><span>SPLIT</span><i></i><span>COMPRESS</span><i></i><span>SIGN</span><i></i><span>REDACT</span><i></i><span>OCR</span><i></i><span>CONVERT</span><i></i><span>SUMMARISE</span><i></i><span>ORGANISE</span><i></i><span>PROTECT</span><i></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="section popular-section" id="popular">
+      <div class="page-shell">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Most used</span>
+            <h2 class="section-title">The everyday bench.</h2>
+          </div>
+          <p class="section-lede">
+            The eight jobs that land on this desk most often. Each one is a single pass — no wizard, no upsell.
+          </p>
+          <a class="text-link section-link" href="tools.html">All tools <span data-icon="arrow"></span></a>
+        </div>
+        <div id="popular-grid" class="tool-grid tool-grid-popular"></div>
+      </div>
+    </section>
+
+    <section class="studio-callout" id="studio">
+      <div class="page-shell studio-callout-grid">
+        <div class="studio-callout-copy">
+          <span class="eyebrow">PaperLab Studio</span>
+          <h2 class="section-title">The page is the interface.</h2>
+          <p class="section-lede">
+            Open a PDF and work directly on it. Drag pages into order, type on the sheet, draw a redaction box,
+            place a signature, or crop to a drawn region. The export is baked, not a fragile layer of annotations.
+          </p>
+          <ul class="feature-list">
+            <li><span class="feature-num mono">01</span><div><strong>Edit &amp; annotate</strong><p>Text, highlights, shapes, freehand ink, images.</p></div></li>
+            <li><span class="feature-num mono">02</span><div><strong>Organise visually</strong><p>Reorder, rotate, duplicate and delete pages on a contact sheet.</p></div></li>
+            <li><span class="feature-num mono">03</span><div><strong>Redact for real</strong><p>Draw boxes or find terms; affected pages are rasterised.</p></div></li>
+            <li><span class="feature-num mono">04</span><div><strong>Sign with an audit trail</strong><p>Draw, type or upload a signature. Get a SHA-256 record.</p></div></li>
+          </ul>
+          <a class="btn btn-primary btn-lg" href="studio.html">Open the studio <span data-icon="arrow"></span></a>
+        </div>
+        <div class="studio-mock" aria-hidden="true">
+          <div class="studio-mock-bar">
+            <span class="mock-dots"><i></i><i></i><i></i></span>
+            <span class="mono micro">quarterly-report.pdf</span>
+            <span class="mock-mode mono">EDIT</span>
+          </div>
+          <div class="studio-mock-body">
+            <div class="mock-rail">
+              <span class="is-on" data-icon="edit"></span>
+              <span data-icon="type"></span>
+              <span data-icon="square"></span>
+              <span data-icon="highlight"></span>
+              <span data-icon="pen"></span>
+              <span data-icon="image"></span>
+              <span data-icon="sign"></span>
+            </div>
+            <div class="mock-canvas">
+              <div class="mock-page">
+                <span class="mock-page-no mono">03</span>
+                <span class="mock-line w70"></span>
+                <span class="mock-line w90"></span>
+                <span class="mock-line w80"></span>
+                <span class="mock-line w40"></span>
+                <span class="mock-highlight"></span>
+                <span class="mock-text">Reviewed by the finance team</span>
+                <span class="mock-selection"><i></i><i></i><i></i><i></i></span>
+                <span class="mock-chart"><i style="height:34%"></i><i style="height:56%"></i><i style="height:43%"></i><i style="height:78%"></i><i style="height:62%"></i></span>
+              </div>
+            </div>
+            <div class="mock-panel">
+              <span class="mono micro">INSPECTOR</span>
+              <span class="mock-field"></span>
+              <span class="mock-field short"></span>
+              <span class="mock-swatches"><i class="blue"></i><i class="magenta"></i><i class="yellow"></i><i class="ink"></i></span>
+              <span class="mock-export">EXPORT PDF</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section groups-section" id="groups">
+      <div class="page-shell">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">The full drawer</span>
+            <h2 class="section-title">Seven families. Forty-one tools.</h2>
+          </div>
+          <p class="section-lede">
+            Everything is grouped the way the work actually arrives: arrange, refine, transform, mark up, secure, fill, understand.
+          </p>
+        </div>
+        <div id="groups-list" class="groups-list"></div>
+      </div>
+    </section>
+
+    <section class="section how-section" id="how">
+      <div class="page-shell">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">How it works</span>
+            <h2 class="section-title">Three moves. Then it is done.</h2>
+          </div>
+          <p class="section-lede">No accounts, no onboarding, no “upgrade to export”. Just a clean hand-off between you and the engine.</p>
+        </div>
+        <ol class="steps">
+          <li class="step">
+            <span class="step-num mono">01</span>
+            <div class="step-icon" data-icon="upload"></div>
+            <h3>Drop the file</h3>
+            <p>Choose a tool or let PaperLab suggest one from the file type. Everything stays local until you press start.</p>
+            <span class="step-rule"></span>
+          </li>
+          <li class="step">
+            <span class="step-num mono">02</span>
+            <div class="step-icon" data-icon="layers"></div>
+            <h3>Set the job</h3>
+            <p>Use plain controls for pages, quality and position. Or open the studio when the job needs eyes and hands.</p>
+            <span class="step-rule"></span>
+          </li>
+          <li class="step">
+            <span class="step-num mono">03</span>
+            <div class="step-icon" data-icon="download"></div>
+            <h3>Take the result</h3>
+            <p>Watch the progress, then download the finished files. They expire automatically so nothing lingers.</p>
+            <span class="step-rule"></span>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="privacy-band" id="privacy">
+      <div class="page-shell privacy-grid">
+        <div class="privacy-stamp" aria-hidden="true">
+          <span class="stamp-ring mono">PRIVATE BY DEFAULT</span>
+          <span class="stamp-icon" data-icon="lock"></span>
+        </div>
+        <div class="privacy-copy">
+          <span class="eyebrow">Privacy &amp; housekeeping</span>
+          <h2 class="section-title">Your files are guests, not inventory.</h2>
+          <p class="section-lede">
+            Uploads live in a temporary work directory and are removed after the job window closes. No accounts,
+            no document library, no training corpus. When you deploy PaperLab yourself, the files never leave your server.
+          </p>
+          <div class="privacy-points">
+            <div><span class="mono">01</span><strong>Expiring jobs</strong><p>Every job has a TTL. The default is two hours; the server sweeps expired work automatically.</p></div>
+            <div><span class="mono">02</span><strong>No third-party uploads</strong><p>Processing engines run on the same host. AI and translation are optional and off unless configured.</p></div>
+            <div><span class="mono">03</span><strong>You own the output</strong><p>No added watermarks, no locked exports, no quiet re-encoding of your originals.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section status-section" id="status">
+      <div class="page-shell status-grid">
+        <div class="status-copy">
+          <span class="eyebrow">The engine room</span>
+          <h2 class="section-title">Honest about what is running.</h2>
+          <p class="section-lede">
+            PaperLab is a Go service with a static front end. It uses pdfcpu for document structure, Poppler for text and
+            rendering, Ghostscript for compression and PDF/A, qpdf for repair and encryption, Tesseract for OCR, and
+            headless Chrome for the web. Tools that need a missing engine are marked instead of quietly failing.
+          </p>
+          <a class="btn btn-quiet" href="api/health" target="_blank" rel="noopener">Inspect the health endpoint <span data-icon="external"></span></a>
+        </div>
+        <div id="status-board" class="status-board" aria-live="polite">
+          <div class="status-board-head"><span class="mono micro">LIVE INVENTORY</span><span class="status-pulse"></span></div>
+          <div class="status-skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section api-section" id="api">
+      <div class="page-shell api-grid">
+        <div class="api-copy">
+          <span class="eyebrow">Built to be yours</span>
+          <h2 class="section-title">A workshop you can take home.</h2>
+          <p class="section-lede">
+            The whole product ships as a Go binary plus static assets. Run it on a laptop, a VPS, or in a container
+            behind Cloudflare. The API is small and documented by example: upload a job, poll it, download the outputs.
+          </p>
+          <div class="api-actions">
+            <a class="btn btn-ink" href="tools.html">Try the hosted bench</a>
+            <a class="btn btn-quiet" href="https://developers.cloudflare.com/" target="_blank" rel="noopener">Deployment notes <span data-icon="external"></span></a>
+          </div>
+        </div>
+        <div class="api-terminal" aria-label="Example API request">
+          <div class="terminal-bar"><span class="mono micro">POST /api/jobs</span><span class="mock-dots"><i></i><i></i><i></i></span></div>
+          <pre><code><span class="tok-comment"># upload a PDF and start a job</span>
+<span class="tok-cmd">curl</span> -X POST <span class="tok-str">https://your-host/api/jobs</span> \
+  -F <span class="tok-key">tool</span>=compress \
+  -F <span class="tok-key">options</span>=<span class="tok-str">'{"level":"balanced"}'</span> \
+  -F <span class="tok-key">files</span>=@report.pdf
+
+<span class="tok-comment"># → { "id": "…", "status": "queued" }</span>
+<span class="tok-cmd">curl</span> <span class="tok-str">https://your-host/api/jobs/…</span>
+<span class="tok-comment"># → outputs[].url, ready to download</span></code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>

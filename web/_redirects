@@ -1,0 +1,5 @@
+# Clean URLs for the static PaperLab front end.
+/tools    /tools.html    200
+/tool     /tool.html     200
+/studio   /studio.html   200
+/chat     /chat.html     200

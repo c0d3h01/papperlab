@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    image: paperlab-api
+    ports:
+      - "8080:8080"
+    environment:
+      PAPERLAB_ADDR: ":8080"
+      PAPERLAB_DATA_DIR: "/data"
+      # Local full-stack mode. Set to 0 when Cloudflare Pages serves the web UI.
+      PAPERLAB_SERVE_WEB: "${PAPERLAB_SERVE_WEB:-1}"
+      PAPERLAB_CORS_ORIGINS: "${PAPERLAB_CORS_ORIGINS:-*}"
+      PAPERLAB_MAX_UPLOAD_MB: "${PAPERLAB_MAX_UPLOAD_MB:-250}"
+      PAPERLAB_JOB_TTL_MIN: "${PAPERLAB_JOB_TTL_MIN:-120}"
+      PAPERLAB_API_KEY: "${PAPERLAB_API_KEY:-}"
+      PAPERLAB_AI_BASE_URL: "${PAPERLAB_AI_BASE_URL:-}"
+      PAPERLAB_AI_API_KEY: "${PAPERLAB_AI_API_KEY:-}"
+      PAPERLAB_AI_MODEL: "${PAPERLAB_AI_MODEL:-}"
+      PAPERLAB_LIBRETRANSLATE_URL: "${PAPERLAB_LIBRETRANSLATE_URL:-}"
+    volumes:
+      - paperlab-data:/data
+    shm_size: "1gb"
+    restart: unless-stopped
+
+volumes:
+  paperlab-data:
