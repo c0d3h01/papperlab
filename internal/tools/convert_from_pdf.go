@@ -126,7 +126,7 @@ func pdfToImages(c *Context) error {
 		return fmt.Errorf("render pages: %w", err)
 	}
 	images, _ := filepath.Glob(prefix + "*." + format)
-	sort.Strings(images)
+	sortRendered(images)
 	var files []string
 	for _, img := range images {
 		page := pageNumberFromRendered(img)
@@ -177,6 +177,17 @@ func pageNumberFromRendered(path string) int {
 	}
 	n, _ := strconv.Atoi(m[1])
 	return n
+}
+
+// sortRendered orders pdftoppm output by page number, not by filename text.
+func sortRendered(paths []string) {
+	sort.Slice(paths, func(i, j int) bool {
+		ni, nj := pageNumberFromRendered(paths[i]), pageNumberFromRendered(paths[j])
+		if ni != nj {
+			return ni < nj
+		}
+		return paths[i] < paths[j]
+	})
 }
 
 func pdfToText(c *Context) error {
@@ -392,7 +403,7 @@ func pdfToPowerpoint(c *Context) error {
 		return fmt.Errorf("render slides: %w", err)
 	}
 	images, _ := filepath.Glob(prefix + "*.png")
-	sort.Strings(images)
+	sortRendered(images)
 	if len(images) == 0 {
 		return fmt.Errorf("could not render any pages")
 	}

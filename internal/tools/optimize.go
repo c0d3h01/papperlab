@@ -271,6 +271,7 @@ found:
 		return fmt.Errorf("render pages: %w", err)
 	}
 	images, _ := filepath.Glob(prefix + "*.png")
+	sortRendered(images)
 	if len(images) == 0 {
 		return fmt.Errorf("could not render any pages")
 	}
@@ -349,6 +350,7 @@ func flattenPDF(c *Context) error {
 		return fmt.Errorf("render pages: %w", err)
 	}
 	images, _ := filepath.Glob(prefix + "*.jpg")
+	sortRendered(images)
 	if len(images) != pages {
 		return fmt.Errorf("expected %d pages, rendered %d", pages, len(images))
 	}

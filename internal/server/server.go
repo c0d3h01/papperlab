@@ -4,6 +4,7 @@ package server
 import (
 	"context"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -49,7 +50,10 @@ func New(cfg config.Config, e *engine.Engines) *Server {
 	}
 	r := gin.New()
 	r.MaxMultipartMemory = 32 << 20
-	_ = r.SetTrustedProxies(nil)
+	if err := r.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+		log.Printf("warning: invalid PAPERLAB_TRUSTED_PROXIES: %v; trusting no proxies", err)
+		_ = r.SetTrustedProxies(nil)
+	}
 	r.Use(gin.Recovery(), s.requestID(), s.cors(), s.securityHeaders(), s.rateLimit(), s.accessLog())
 	s.router = r
 	s.routes()
@@ -189,6 +193,7 @@ func (s *Server) securityHeaders() gin.HandlerFunc {
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
 		c.Header("X-Frame-Options", "SAMEORIGIN")
 		c.Header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+		c.Header("Content-Security-Policy", "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; worker-src 'self' blob:; manifest-src 'self'; form-action 'self'; frame-ancestors 'self'")
 		c.Next()
 	}
 }
@@ -222,7 +227,7 @@ func (s *Server) apiKey() gin.HandlerFunc {
 				got = strings.TrimSpace(auth[7:])
 			}
 		}
-		if got != key {
+		if subtle.ConstantTimeCompare([]byte(got), []byte(key)) != 1 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "a valid API key is required"})
 			return
 		}
@@ -492,11 +497,16 @@ func urlPathEscape(s string) string {
 }
 
 func (s *Server) saveUpload(c *gin.Context, field string) (string, func(), error) {
+	limit := s.cfg.MaxUploadMB * 1024 * 1024
+	if limit <= 0 {
+		limit = 250 << 20
+	}
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limit)
 	file, err := c.FormFile(field)
 	if err != nil {
 		return "", nil, fmt.Errorf("upload a file in the %q field", field)
 	}
-	if file.Size > s.cfg.MaxUploadMB*1024*1024 {
+	if file.Size > limit {
 		return "", nil, fmt.Errorf("file is larger than the %d MB limit", s.cfg.MaxUploadMB)
 	}
 	dir, err := os.MkdirTemp(filepath.Join(s.cfg.DataDir, "staging"), "inspect-")
@@ -508,7 +518,11 @@ func (s *Server) saveUpload(c *gin.Context, field string) (string, func(), error
 		}
 	}
 	cleanup := func() { _ = os.RemoveAll(dir) }
-	dest := filepath.Join(dir, tools.SafeFileName(file.Filename))
+	name := tools.SafeFileName(file.Filename)
+	if name == "" {
+		name = "upload"
+	}
+	dest := filepath.Join(dir, name)
 	if err := c.SaveUploadedFile(file, dest); err != nil {
 		cleanup()
 		return "", nil, err

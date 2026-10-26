@@ -16,14 +16,12 @@ import (
 
 // Input is a file uploaded for a job.
 type Input struct {
-	ID       string     `json:"id"`
-	Name     string     `json:"name"`
-	Path     string     `json:"-"`
-	Size     int64      `json:"size"`
-	MIME     string     `json:"mime"`
-	Role     string     `json:"role"`
-	Pages    int        `json:"pages,omitempty"`
-	PageDims []PageSize `json:"pageSizes,omitempty"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Path string `json:"-"`
+	Size int64  `json:"size"`
+	MIME string `json:"mime"`
+	Role string `json:"role"`
 }
 
 // Output is a produced file.
@@ -53,6 +51,9 @@ type Context struct {
 	Options map[string]any
 	Meta    map[string]any
 	Engines *engine.Engines
+
+	// AllowLocalURLs permits HTML-to-PDF to reach private network addresses.
+	AllowLocalURLs bool
 
 	progress func(int, string)
 	mu       sync.Mutex

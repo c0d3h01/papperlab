@@ -47,10 +47,10 @@ func init() {
 	})
 	Register(&Tool{
 		ID: "html-to-pdf", Name: "HTML to PDF", Group: "convert",
-		Description: "Render a web page or HTML file to PDF with headless Chrome.",
-		Requires:    []string{"chrome"},
+		Description:  "Render a web page or HTML file to PDF with headless Chrome.",
+		Requires:     []string{"chrome"},
 		AllowNoInput: true,
-		Run:         htmlToPDF,
+		Run:          htmlToPDF,
 	})
 	Register(&Tool{
 		ID: "scan-to-pdf", Name: "Scan to PDF", Group: "convert",
@@ -190,12 +190,7 @@ func imageTypeFor(path string) string {
 }
 
 func convertImage(c *Context, path string, index int, gray bool, contrast float64) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	img, _, err := image.Decode(f)
-	f.Close()
+	img, err := decodeImage(path)
 	if err != nil {
 		return "", fmt.Errorf("decode image: %w", err)
 	}
@@ -274,15 +269,28 @@ type docBlock struct {
 	Bullet  bool
 }
 
+const (
+	maxZipEntries    = 10000
+	maxZipEntryBytes = 64 << 20
+	maxZipTotalBytes = 256 << 20
+	maxPPTXSlides    = 2000
+)
+
 func parseDOCX(path string) ([]docBlock, error) {
 	zr, err := zip.OpenReader(path)
 	if err != nil {
 		return nil, fmt.Errorf("open DOCX: %w", err)
 	}
 	defer zr.Close()
+	if len(zr.File) > maxZipEntries {
+		return nil, fmt.Errorf("DOCX contains too many files")
+	}
 	var body io.ReadCloser
 	for _, f := range zr.File {
 		if f.Name == "word/document.xml" {
+			if f.UncompressedSize64 > maxZipEntryBytes {
+				return nil, fmt.Errorf("DOCX document.xml is too large")
+			}
 			body, err = f.Open()
 			if err != nil {
 				return nil, err
@@ -294,6 +302,7 @@ func parseDOCX(path string) ([]docBlock, error) {
 		return nil, fmt.Errorf("this file is not a valid DOCX document")
 	}
 	defer body.Close()
+	body = io.NopCloser(io.LimitReader(body, maxZipEntryBytes+1))
 	type textNode struct {
 		Text string `xml:",chardata"`
 	}
@@ -301,7 +310,7 @@ func parseDOCX(path string) ([]docBlock, error) {
 		Style string `xml:"pStyle,attr"`
 	}
 	type paragraph struct {
-		Props paraProps `xml:"pPr"`
+		Props paraProps  `xml:"pPr"`
 		Runs  []textNode `xml:"r>t"`
 	}
 	type document struct {
@@ -436,17 +445,24 @@ func parsePPTX(path string) ([]slideContent, error) {
 		return nil, fmt.Errorf("open PPTX: %w", err)
 	}
 	defer zr.Close()
+	if len(zr.File) > maxZipEntries {
+		return nil, fmt.Errorf("PPTX contains too many files")
+	}
 	var names []string
 	for _, f := range zr.File {
 		if strings.HasPrefix(f.Name, "ppt/slides/slide") && strings.HasSuffix(f.Name, ".xml") {
 			names = append(names, f.Name)
 		}
 	}
+	if len(names) > maxPPTXSlides {
+		return nil, fmt.Errorf("PPTX contains too many slides (maximum %d)", maxPPTXSlides)
+	}
 	sort.Slice(names, func(i, j int) bool { return slideNumber(names[i]) < slideNumber(names[j]) })
 	if len(names) == 0 {
 		return nil, fmt.Errorf("this file is not a valid PPTX presentation")
 	}
 	var slides []slideContent
+	var totalBytes int64
 	for _, name := range names {
 		var f *zip.File
 		for _, candidate := range zr.File {
@@ -457,6 +473,13 @@ func parsePPTX(path string) ([]slideContent, error) {
 		}
 		if f == nil {
 			continue
+		}
+		if f.UncompressedSize64 > maxZipEntryBytes {
+			return nil, fmt.Errorf("PPTX slide is too large")
+		}
+		totalBytes += int64(f.UncompressedSize64)
+		if totalBytes > maxZipTotalBytes {
+			return nil, fmt.Errorf("PPTX slides are too large")
 		}
 		rc, err := f.Open()
 		if err != nil {
@@ -478,7 +501,7 @@ func parsePPTX(path string) ([]slideContent, error) {
 			Tree spTree `xml:"cSld>spTree"`
 		}
 		var s slide
-		err = xml.NewDecoder(rc).Decode(&s)
+		err = xml.NewDecoder(io.LimitReader(rc, maxZipEntryBytes+1)).Decode(&s)
 		rc.Close()
 		if err != nil {
 			continue
@@ -607,7 +630,10 @@ func renderSpreadsheet(c *Context, path, out, title string) error {
 		sheets = append(sheets, rows)
 		sheetNames = append(sheetNames, "Sheet 1")
 	} else {
-		f, err := excelize.OpenFile(path)
+		f, err := excelize.OpenFile(path, excelize.Options{
+			UnzipSizeLimit:    maxZipTotalBytes,
+			UnzipXMLSizeLimit: 32 << 20,
+		})
 		if err != nil {
 			return fmt.Errorf("open workbook: %w", err)
 		}
@@ -759,9 +785,9 @@ func htmlToPDF(c *Context) error {
 		abs, _ := filepath.Abs(in.Path)
 		target = "file://" + filepath.ToSlash(abs)
 	} else if raw := strings.TrimSpace(c.Str("url", "")); raw != "" {
-		u, err := url.Parse(raw)
-		if err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-			return fmt.Errorf("enter a valid http(s) URL")
+		u, err := validateRemoteURL(c.Ctx, raw, c.AllowLocalURLs)
+		if err != nil {
+			return err
 		}
 		target = u.String()
 	} else {
@@ -815,6 +841,13 @@ func htmlToPDF(c *Context) error {
 	)
 	if doErr != nil {
 		return fmt.Errorf("render page: %w", doErr)
+	}
+	if finalURL, locErr := chromedp.Run(browserCtx, chromedp.Location()); locErr == nil {
+		if strings.HasPrefix(finalURL, "http://") || strings.HasPrefix(finalURL, "https://") {
+			if _, err := validateRemoteURL(c.Ctx, finalURL, c.AllowLocalURLs); err != nil {
+				return fmt.Errorf("the page redirected to a blocked address")
+			}
+		}
 	}
 	runCtx, cancelRun := context.WithTimeout(browserCtx, 90*time.Second)
 	defer cancelRun()

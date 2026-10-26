@@ -19,7 +19,7 @@ type Config struct {
 	JobTimeout      time.Duration
 	APIKey          string
 	CORSOrigins     []string
-	PublicURL       string
+	TrustedProxies  []string
 	AllowLocalURLs  bool
 	AIBaseURL       string
 	AIAPIKey        string
@@ -72,6 +72,12 @@ func Load() Config {
 			}
 		}
 	}
+	var proxies []string
+	for _, s := range strings.Split(os.Getenv("PAPERLAB_TRUSTED_PROXIES"), ",") {
+		if s = strings.TrimSpace(s); s != "" {
+			proxies = append(proxies, s)
+		}
+	}
 	return Config{
 		Addr:            env("PAPERLAB_ADDR", ":8080"),
 		WebDir:          env("PAPERLAB_WEB_DIR", "web"),
@@ -83,7 +89,7 @@ func Load() Config {
 		JobTimeout:      time.Duration(envInt("PAPERLAB_JOB_TIMEOUT_MIN", 20)) * time.Minute,
 		APIKey:          os.Getenv("PAPERLAB_API_KEY"),
 		CORSOrigins:     cors,
-		PublicURL:       strings.TrimRight(os.Getenv("PAPERLAB_PUBLIC_URL"), "/"),
+		TrustedProxies:  proxies,
 		AllowLocalURLs:  envBool("PAPERLAB_ALLOW_LOCAL_URLS", false),
 		AIBaseURL:       strings.TrimRight(os.Getenv("PAPERLAB_AI_BASE_URL"), "/"),
 		AIAPIKey:        os.Getenv("PAPERLAB_AI_API_KEY"),

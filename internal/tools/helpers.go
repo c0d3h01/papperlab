@@ -72,26 +72,6 @@ func pageDims(path, password string) ([]PageSize, int, error) {
 	return out, len(dims), nil
 }
 
-func (c *Context) describeInput(in *Input) {
-	if strings.EqualFold(filepath.Ext(in.Name), ".pdf") {
-		dims, pages, err := pageDims(in.Path, "")
-		if err != nil {
-			dims, pages, err = pageDims(in.Path, c.Password())
-		}
-		if err == nil {
-			in.Pages = pages
-			in.PageDims = dims
-		}
-	}
-}
-
-func (c *Context) PrepareInputs() error {
-	for i := range c.Inputs {
-		c.describeInput(&c.Inputs[i])
-	}
-	return nil
-}
-
 func (c *Context) inputPDFs() []Input {
 	var out []Input
 	for _, in := range c.Inputs {
@@ -388,8 +368,21 @@ func (c *Context) infoFor(path, password string) (*pdfcpu.PDFInfo, error) {
 	return api.PDFInfo(c.Ctx, f, filepath.Base(path), nil, false, pdfConf(password))
 }
 
+const maxImagePixels = 64_000_000
+
 func (c *Context) pageSizes(path string) ([]PageSize, int, error) {
 	return pageDims(path, c.Password())
+}
+
+func checkImageConfig(cfg image.Config) error {
+	if cfg.Width <= 0 || cfg.Height <= 0 {
+		return fmt.Errorf("could not read image dimensions")
+	}
+	if cfg.Width > maxImagePixels || cfg.Height > maxImagePixels ||
+		int64(cfg.Width) > int64(maxImagePixels)/int64(cfg.Height) {
+		return fmt.Errorf("image is too large (maximum %d megapixels)", maxImagePixels/1_000_000)
+	}
+	return nil
 }
 
 func decodeImageConfig(path string) (image.Config, string, error) {
@@ -399,7 +392,34 @@ func decodeImageConfig(path string) (image.Config, string, error) {
 	}
 	defer f.Close()
 	cfg, format, err := image.DecodeConfig(f)
-	return cfg, format, err
+	if err != nil {
+		return image.Config{}, "", err
+	}
+	if err := checkImageConfig(cfg); err != nil {
+		return image.Config{}, "", err
+	}
+	return cfg, format, nil
+}
+
+// decodeImage checks the declared dimensions before allocating the full bitmap.
+func decodeImage(path string) (image.Image, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	cfg, _, err := image.DecodeConfig(f)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkImageConfig(cfg); err != nil {
+		return nil, err
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	img, _, err := image.Decode(f)
+	return img, err
 }
 
 func pageToken(n int) string { return strconv.Itoa(n) }

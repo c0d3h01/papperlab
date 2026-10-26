@@ -212,8 +212,9 @@ func redactPDF(c *Context) error {
 		return fmt.Errorf("render pages: %w", err)
 	}
 	images, _ := filepath.Glob(prefix + "*.png")
-	if len(images) == 0 {
-		return fmt.Errorf("could not render any pages")
+	sortRendered(images)
+	if len(images) != pages {
+		return fmt.Errorf("expected %d pages, rendered %d", pages, len(images))
 	}
 	byPage := map[int][]redactBox{}
 	for _, b := range boxes {
@@ -225,12 +226,7 @@ func redactPDF(c *Context) error {
 	pdf.SetCompression(true)
 	for i, imgPath := range images {
 		pageNr := i + 1
-		f, err := os.Open(imgPath)
-		if err != nil {
-			return err
-		}
-		src, _, err := image.Decode(f)
-		f.Close()
+		src, err := decodeImage(imgPath)
 		if err != nil {
 			return fmt.Errorf("decode page %d: %w", pageNr, err)
 		}
@@ -321,8 +317,8 @@ func comparePDF(c *Context) error {
 	}
 	imgsA, _ := filepath.Glob(prefixA + "*.png")
 	imgsB, _ := filepath.Glob(prefixB + "*.png")
-	sort.Strings(imgsA)
-	sort.Strings(imgsB)
+	sortRendered(imgsA)
+	sortRendered(imgsB)
 	textA, _ := readTextPages(a.Path, c.Password())
 	textB, _ := readTextPages(b.Path, c.Password())
 	dmp := diffmatchpatch.New()
@@ -393,12 +389,7 @@ func renderPages(c *Context, path, prefix string, dpi int) error {
 }
 
 func readImage(path string) image.Image {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil
-	}
-	defer f.Close()
-	img, _, err := image.Decode(f)
+	img, err := decodeImage(path)
 	if err != nil {
 		return nil
 	}

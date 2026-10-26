@@ -91,10 +91,12 @@ func (m *Manager) Close() {
 	}
 }
 
-func newID() string {
-	b := make([]byte, 10)
-	_, _ = rand.Read(b)
-	return hex.EncodeToString(b)
+func newID() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("generate job id: %w", err)
+	}
+	return hex.EncodeToString(b), nil
 }
 
 // Create moves uploaded files into a new job directory and starts it.
@@ -115,7 +117,10 @@ func (m *Manager) Create(toolID string, inputs []tools.Input, options map[string
 		return nil, fmt.Errorf("at most %d files are allowed", m.cfg.MaxFiles)
 	}
 
-	id := newID()
+	id, err := newID()
+	if err != nil {
+		return nil, err
+	}
 	dir := filepath.Join(m.cfg.DataDir, id)
 	inDir := filepath.Join(dir, "in")
 	outDir := filepath.Join(dir, "out")
@@ -181,7 +186,7 @@ func (m *Manager) run(job *Job, tool *tools.Tool, options map[string]any) {
 		Ctx: ctx, JobID: job.ID, Dir: job.dir,
 		InDir: filepath.Join(job.dir, "in"), OutDir: filepath.Join(job.dir, "out"),
 		Inputs: job.Inputs, Options: options, Meta: map[string]any{},
-		Engines: m.engines,
+		Engines: m.engines, AllowLocalURLs: m.cfg.AllowLocalURLs,
 	}
 	tctx.SetProgressFunc(func(p int, msg string) {
 		job.mu.Lock()
@@ -226,9 +231,6 @@ func (m *Manager) run(job *Job, tool *tools.Tool, options map[string]any) {
 		job.Message = "Ready"
 	}
 	job.mu.Unlock()
-
-	// Persist input page counts for clients after tools inspect them.
-	job.Inputs = tctx.Inputs
 }
 
 func friendlyError(err error) string {
