@@ -1,9 +1,9 @@
 /*
  * PaperLab runtime configuration.
  *
- * Same-origin deployment (Gin serves the frontend): leave this empty.
- * Cloudflare Pages frontend + container API: set the public API origin,
- * for example "https://api.paperlab.example".
+ * Same-origin setup (Gin serves the frontend): leave this empty.
+ * Separate frontend and API hosts: set the public API origin,
+ * for example "https://api.example.com".
  *
  * You can also override it at runtime with:
  *   ?api=https://api.example

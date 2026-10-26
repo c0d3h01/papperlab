@@ -3,13 +3,13 @@ services:
     build: .
     image: paperlab-api
     ports:
-      # Loopback only: Cloudflare Tunnel runs on the host and connects here.
-      # Change to "8080:8080" only if you need LAN access.
+      # Loopback only: keeps the API off the LAN by default.
+      # Change to "8080:8080" if you need LAN access.
       - "127.0.0.1:8080:8080"
     environment:
       PAPERLAB_ADDR: ":8080"
       PAPERLAB_DATA_DIR: "/data"
-      # Local full-stack mode. Set to 0 when Cloudflare Pages serves the web UI.
+      # Serve the web UI from the API container. Set to 0 when the UI is hosted separately.
       PAPERLAB_SERVE_WEB: "${PAPERLAB_SERVE_WEB:-1}"
       PAPERLAB_CORS_ORIGINS: "${PAPERLAB_CORS_ORIGINS:-*}"
       PAPERLAB_TRUSTED_PROXIES: "${PAPERLAB_TRUSTED_PROXIES:-}"
