@@ -39,6 +39,7 @@ ENV PAPERLAB_ADDR=:8080 \
 WORKDIR /app
 COPY --from=build /out/paperlab /usr/local/bin/paperlab
 COPY web ./web
+COPY LICENSE NOTICE THIRD_PARTY_NOTICES.md /app/
 RUN mkdir -p /data && chown 10001:10001 /data
 USER 10001:10001
 
