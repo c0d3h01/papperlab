@@ -28,20 +28,25 @@ Requirements:
 - LibreOffice (optional, for high-fidelity Office conversion)
 - Chromium/Chrome (optional, for HTML/URL to PDF)
 
-Run the full stack:
+Copy the example environment and load it into the shell:
 
 ```sh
+cp .env.example .env
+set -a; . ./.env; set +a
 go build -o bin/paperlab ./cmd/server
-PAPERLAB_DATA_DIR=/tmp/paperlab PAPERLAB_SERVE_WEB=1 ./bin/paperlab
+./bin/paperlab
 ```
 
 Open <http://localhost:8080>. The API health check is at `/api/health`.
 
-Or use Docker Compose, which installs all engines and serves the web UI:
+Or use Docker Compose, which installs all engines, reads `.env`, and serves the web UI:
 
 ```sh
+cp .env.example .env
 docker compose up --build
 ```
+
+The Go binary does not parse `.env` itself. Export it as shown above, or pass variables inline.
 
 ## Deployment
 
@@ -51,9 +56,9 @@ Build and run the API image:
 
 ```sh
 docker build -t paperlab-api .
-docker run --rm -p 8080:8080 \
-  -e PAPERLAB_SERVE_WEB=0 \
-  -e PAPERLAB_CORS_ORIGINS=https://paperlab.pages.dev \
+cp .env.production .env
+# Edit .env: set PAPERLAB_CORS_ORIGINS, PAPERLAB_API_KEY and any AI keys.
+docker run --rm -p 8080:8080 --env-file .env \
   -v paperlab-data:/data \
   paperlab-api
 ```
@@ -116,6 +121,10 @@ cloudflared tunnel run paperlab-api
 For a quick test, `cloudflared tunnel --url http://127.0.0.1:8080` prints a temporary public URL. Cloudflare Containers is an alternative if you want Cloudflare to run the container itself; keep the same container port and health endpoint.
 
 ## Configuration
+
+`.env.example` is the local template and `.env.production` is the production template. Copy either to `.env`; the real `.env` is ignored by git, so keys never belong in the templates.
+
+For a split Pages deployment, start from `.env.production`, set `PAPERLAB_CORS_ORIGINS` to the Pages origin, and set `PAPERLAB_API_KEY` to a long random value if the API is public. Store the same key in the browser as `localStorage.paperlab_api_key`. Behind Cloudflare, keep `PAPERLAB_MAX_UPLOAD_MB` at or below 100 unless your plan raises the request-body limit.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
