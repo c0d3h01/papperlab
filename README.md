@@ -110,6 +110,6 @@ Security problems should be reported privately through GitHub's Security tab rat
 
 ## License
 
-PaperLab is licensed under the Apache License 2.0. The full text is in `LICENSE`; attribution notices are in `NOTICE`. Third-party components, including the bundled fonts, PDF.js and the Go modules, are listed in `THIRD_PARTY_NOTICES.md`. The Docker image also contains Ghostscript (AGPL-3.0), Poppler (GPL-2.0), LibreOffice (MPL-2.0), Tesseract, qpdf and Chromium; see that file before redistributing the image.
+PaperLab is Copyright 2026 Harshal Sawant and licensed under the Apache License 2.0. The full text is in `LICENSE`. Third-party components, including the bundled fonts, PDF.js and the Go modules, are listed in `THIRD_PARTY_NOTICES.md`. The Docker image also contains Ghostscript (AGPL-3.0), Poppler (GPL-2.0), LibreOffice (MPL-2.0), Tesseract, qpdf and Chromium; see that file before redistributing the image.
 
 PaperLab is an independent project and is not affiliated with iLovePDF or any other PDF brand.
