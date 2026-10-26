@@ -58,7 +58,7 @@ Build and run the API image:
 docker build -t paperlab-api .
 cp .env.production .env
 # Edit .env: set PAPERLAB_CORS_ORIGINS, PAPERLAB_API_KEY and any AI keys.
-docker run --rm -p 8080:8080 --env-file .env \
+docker run --rm -p 127.0.0.1:8080:8080 --env-file .env \
   -v paperlab-data:/data \
   paperlab-api
 ```
@@ -118,9 +118,20 @@ cloudflared tunnel route dns paperlab-api api.paperlab.example
 cloudflared tunnel run paperlab-api
 ```
 
-For a quick test, `cloudflared tunnel --url http://127.0.0.1:8080` prints a temporary public URL. Cloudflare Containers is an alternative if you want Cloudflare to run the container itself; keep the same container port and health endpoint.
+For a quick test, `cloudflared tunnel --url http://127.0.0.1:8080` prints a temporary public URL. Cloudflare Containers requires the Workers Paid plan ($5/month minimum) and is not part of the free path; it also needs a Worker wrapper and does not provide the persistent local disk this app uses.
 
-Set `PAPERLAB_TRUSTED_PROXIES` to the address cloudflared connects from (for example `127.0.0.1` when it runs on the same host) so rate limiting sees the real client IP from `X-Forwarded-For`. Leave it empty when the API is directly exposed. Also keep an egress firewall in front of the container if users can submit arbitrary HTML or URLs: HTML-to-PDF is an outbound fetch primitive, and `PAPERLAB_ALLOW_LOCAL_URLS=false` only blocks the initial URL and redirects, not every subresource Chrome may request.
+Set `PAPERLAB_TRUSTED_PROXIES` to the address the API sees cloudflared connecting from, so rate limiting reads the real client IP from `X-Forwarded-For`. With the binary running directly on the host that is `127.0.0.1`. With Docker it is the bridge gateway, not loopback; find it with `docker compose exec api sh -c 'ip route | awk "/default/ {print \$3}"'` (usually `172.x.0.1`). If cloudflared runs in the same Compose network, use that network's subnet CIDR instead. Leave it empty when the API is directly exposed. Also keep an egress firewall in front of the container if users can submit arbitrary HTML or URLs: HTML-to-PDF is an outbound fetch primitive, and `PAPERLAB_ALLOW_LOCAL_URLS=false` only blocks the initial URL and redirects, not every subresource Chrome may request.
+
+### Free-always deployment
+
+Cloudflare Pages and Cloudflare Tunnel are free. The API needs native PDF engines, a writable data directory and jobs longer than a Worker invocation, so it must run in a container or VM. For a $0 deployment, run the container on an always-on machine and expose only the tunnel:
+
+- **Oracle Cloud Always Free** Ampere A1 instance (2 OCPU / 12 GB RAM, 200 GB storage as of 2026). This is the only free tier with enough memory for LibreOffice and Chromium. Oracle may reclaim an instance that stays below 20% CPU, network and memory utilisation over 7 days, so keep backups and treat it as reclaimable.
+- **An always-on home server or NAS** with Docker. Uptime is then your responsibility.
+
+Bind the API to `127.0.0.1:8080` and let cloudflared reach it from the same host. Do not open port 8080 in the VM firewall or Oracle security list. Set `PAPERLAB_TRUSTED_PROXIES` to the Docker bridge gateway as described above, otherwise every visitor shares one rate-limit bucket. Keep `PAPERLAB_MAX_UPLOAD_MB` at or below 100: Cloudflare's free proxy accepts at most 100 MB per request and waits 100 seconds for an origin response. The async job model keeps processing off the request path, but very slow uploads or large downloads can still hit those limits.
+
+The front end stays on Pages and the API gets a stable hostname such as `api.paperlab.example`; Cloudflare Tunnel requires a domain in a Cloudflare zone. A quick `trycloudflare.com` tunnel is fine for testing but changes URL on restart and has no uptime guarantee.
 
 ## Configuration
 
