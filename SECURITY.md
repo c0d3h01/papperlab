@@ -68,7 +68,7 @@ assumptions:
   submit arbitrary HTML or URLs.
 - Keep the base image, Debian packages and Go modules patched. Dependabot is
   configured for Go modules, GitHub Actions and Docker.
-- Do not put secrets in `.env.example` or `.env.production`; both are tracked.
+- Do not put secrets in `.env.example`; it is tracked. Keep `.env` and `.env.production` local; both are ignored.
 
 ## Known limitations
 

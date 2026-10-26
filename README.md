@@ -56,8 +56,9 @@ Build and run the API image:
 
 ```sh
 docker build -t paperlab-api .
-cp .env.production .env
-# Edit .env: set PAPERLAB_CORS_ORIGINS, PAPERLAB_API_KEY and any AI keys.
+cp .env.example .env
+# Edit .env for production: PAPERLAB_SERVE_WEB=0, the exact CORS origin,
+# PAPERLAB_MAX_UPLOAD_MB=100, and a key if the API is private.
 docker run --rm -p 127.0.0.1:8080:8080 --env-file .env \
   -v paperlab-data:/data \
   paperlab-api
@@ -135,9 +136,9 @@ The front end stays on Pages and the API gets a stable hostname such as `api.pap
 
 ## Configuration
 
-`.env.example` is the local template and `.env.production` is the production template. Copy either to `.env`; the real `.env` is ignored by git, so keys never belong in the templates.
+`.env.example` is the tracked template. Copy it to `.env` and fill in your values. `.env` and `.env.production` are ignored by git, so production keys stay local. Do not commit a filled `.env` or `.env.production`.
 
-For a split Pages deployment, start from `.env.production`, set `PAPERLAB_CORS_ORIGINS` to the Pages origin, and set `PAPERLAB_API_KEY` to a long random value if the API is public. Store the same key in the browser as `localStorage.paperlab_api_key`. Behind Cloudflare, keep `PAPERLAB_MAX_UPLOAD_MB` at or below 100 unless your plan raises the request-body limit.
+For a split Pages deployment, start from `.env.example` or your private `.env.production`, set `PAPERLAB_CORS_ORIGINS` to the Pages origin, and set `PAPERLAB_API_KEY` to a long random value if the API is public. Store the same key in the browser as `localStorage.paperlab_api_key`. Behind Cloudflare, keep `PAPERLAB_MAX_UPLOAD_MB` at or below 100 unless your plan raises the request-body limit.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
