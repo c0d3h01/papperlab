@@ -167,12 +167,23 @@ function buildFooter() {
         ["No account required", "index.html#how"],
         ["Open API", "index.html#api"],
         ["Deploy your own", "index.html#api"],
+        ["Sponsor on GitHub", "https://github.com/sponsors/c0d3h01"],
       ],
     },
   ];
   for (const col of cols) {
     const node = h("div", { class: "footer-col" }, h("h3", { class: "footer-col-title", text: col.title }));
-    for (const [label, href] of col.links) node.append(h("a", { href, text: label }));
+    for (const [label, href] of col.links) {
+      const external = /^https?:/i.test(href);
+      node.append(
+        h("a", {
+          href,
+          text: label,
+          target: external ? "_blank" : null,
+          rel: external ? "noopener" : null,
+        })
+      );
+    }
     columns.append(node);
   }
   top.append(statement, columns);

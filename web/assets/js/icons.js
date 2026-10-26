@@ -46,6 +46,7 @@ const paths = {
   check: '<path d="M4 12l5 5L20 6"/>',
   warning: '<path d="M12 3l10 18H2zM12 9v5M12 17h.01"/>',
   spark: '<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2zM19 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/>',
+  heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0 0-7.8z"/>',
   lock: '<path d="M6 11h12v10H6zM9 11V7a3 3 0 0 1 6 0v4"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   file: '<path d="M6 3h8l4 4v14H6zM14 3v5h5"/>',

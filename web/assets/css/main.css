@@ -1906,6 +1906,78 @@ body.nav-open {
 .tok-key { color: #ff8db4; }
 
 /* ==========================================================================
+   Sponsor
+   ========================================================================== */
+
+.sponsor-band {
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  background: var(--paper-2);
+  padding: clamp(44px, 6vw, 72px) 0;
+}
+.sponsor-grid {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr) auto;
+  gap: clamp(28px, 5vw, 64px);
+  align-items: center;
+}
+.sponsor-stamp {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  border: 1px dashed var(--rule-strong);
+  border-radius: 50%;
+  transform: rotate(-6deg);
+}
+.sponsor-stamp::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+}
+.sponsor-stamp-ring {
+  position: absolute;
+  top: 20px;
+  font-size: 7.5px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+}
+.sponsor-stamp-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  background: #14171b;
+  color: var(--yellow);
+  border-radius: 50%;
+}
+.sponsor-copy .section-title {
+  margin-top: 10px;
+  font-size: clamp(30px, 3.2vw, 44px);
+}
+.sponsor-copy .section-lede {
+  margin-top: 14px;
+  max-width: 560px;
+}
+.sponsor-action {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+.sponsor-action .btn {
+  white-space: nowrap;
+}
+.sponsor-note {
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
    Footer
    ========================================================================== */
 
@@ -4095,6 +4167,26 @@ body.has-modal {
   .privacy-points {
     grid-template-columns: 1fr;
   }
+  .sponsor-grid {
+    grid-template-columns: 110px minmax(0, 1fr);
+    align-items: start;
+  }
+  .sponsor-stamp {
+    width: 110px;
+    height: 110px;
+  }
+  .sponsor-stamp-ring {
+    top: 16px;
+    font-size: 7px;
+  }
+  .sponsor-stamp-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .sponsor-action {
+    grid-column: 2;
+    justify-items: start;
+  }
   .footer-top {
     grid-template-columns: 1fr;
   }
@@ -4185,6 +4277,29 @@ body.has-modal {
   }
   .group-tools {
     grid-template-columns: 1fr;
+  }
+  .sponsor-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .sponsor-stamp {
+    width: 96px;
+    height: 96px;
+  }
+  .sponsor-stamp-ring {
+    top: 14px;
+    font-size: 6.5px;
+  }
+  .sponsor-stamp-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .sponsor-action {
+    grid-column: auto;
+    justify-items: stretch;
+  }
+  .sponsor-action .btn {
+    width: 100%;
   }
   .footer-columns {
     grid-template-columns: 1fr;
