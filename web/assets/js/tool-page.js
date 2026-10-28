@@ -18,6 +18,7 @@ import {
 } from "./tools-data.js";
 import { saveHandoff, takeHandoff } from "./file-store.js";
 import { runToolJob } from "./job-view.js";
+import { acceptsPDF, capFiles, mountImportBar } from "./google-drive.js";
 import {
   tools as fetchTools,
   config as fetchConfig,
@@ -203,7 +204,7 @@ function renderAside(group) {
       "div",
       { class: "aside-card" },
       h("h3", { class: "aside-card-title" }, h("span", { html: icon("lock", 14) }), "House rules"),
-      h("p", { text: "No account. No added watermark. Files are deleted when the job window closes." })
+      h("p", { text: "No added watermark. Files are deleted when the job window closes." })
     )
   );
 }
@@ -252,6 +253,23 @@ function buildLayout(state) {
     },
   });
   state.drop = drop;
+
+  if (acceptsPDF(tool.accept)) {
+    mountImportBar(dropHost, {
+      maxFiles: tool.maxFiles || 1,
+      getMaxUploadMB: () => state.configData?.maxUploadMB || 0,
+      onFiles(files) {
+        const { files: next, skipped } = capFiles(state.drop.files, files, tool.maxFiles || 1);
+        state.drop.setFiles(next);
+        if (skipped) {
+          toast(
+            `${skipped} file${skipped === 1 ? "" : "s"} skipped: this tool accepts ${tool.maxFiles || 1}.`,
+            "info"
+          );
+        }
+      },
+    });
+  }
 
   const optionsCard = h("section", { class: "tool-form-card", id: "options-card" });
   area.append(optionsCard);

@@ -807,6 +807,57 @@ body.nav-open {
 .dropzone-compact .btn {
   margin: 0 0 0 auto;
 }
+.cloud-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+.cloud-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.cloud-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid color-mix(in srgb, var(--blue) 25%, var(--rule));
+  background: color-mix(in srgb, var(--blue) 9%, var(--paper));
+  color: var(--blue);
+}
+.cloud-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.cloud-copy strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.cloud-status {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+.cloud-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.cloud-bar .btn {
+  white-space: nowrap;
+}
 .file-list {
   margin-top: 10px;
   display: grid;
@@ -1726,6 +1777,47 @@ body.nav-open {
   font-size: 12px;
   line-height: 1.55;
   color: rgba(20, 23, 27, 0.66);
+}
+.policy {
+  max-width: 760px;
+}
+.policy h2 {
+  margin-top: 34px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.policy h2:first-child {
+  margin-top: 0;
+}
+.policy p,
+.policy li {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.policy ul {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-left: 20px;
+  list-style: disc;
+}
+.policy code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--ink-2);
+}
+.policy a {
+  color: var(--blue);
+}
+.policy-date {
+  margin-top: 28px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--muted-2);
 }
 
 .status-grid {
@@ -3866,6 +3958,12 @@ body.nav-open {
   flex: 1;
   min-width: 0;
 }
+.toast-action {
+  color: var(--blue);
+  font-weight: 600;
+  white-space: nowrap;
+  flex: none;
+}
 .toast-close {
   border: 0;
   background: transparent;
@@ -4243,7 +4341,7 @@ body.has-modal {
     flex-wrap: wrap;
   }
   .output-actions {
-    width: 100%;
+    width: calc(100% - 52px);
     margin-left: 52px;
   }
   .result-actions .btn {
@@ -4290,6 +4388,15 @@ body.has-modal {
   .dropzone.has-files .btn {
     margin-left: 0;
     width: 100%;
+  }
+  .cloud-bar {
+    flex-wrap: wrap;
+  }
+  .cloud-actions {
+    width: 100%;
+  }
+  .cloud-actions .btn {
+    flex: 1;
   }
   .group-tools {
     grid-template-columns: 1fr;

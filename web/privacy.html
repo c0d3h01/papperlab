@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy · PaperLab</title>
+  <meta name="description" content="How PaperLab handles uploaded files, job data, and the optional Google Drive connection.">
+  <meta name="theme-color" content="#eef0ee">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script type="module" src="assets/js/privacy.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section">
+      <div class="page-shell">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Privacy</span>
+            <h1 class="section-title">Your files are guests, not inventory.</h1>
+          </div>
+          <p class="section-lede">
+            PaperLab processes a file to run the job you asked for. It does not keep a document library,
+            sell your data, or train models on your files.
+          </p>
+        </div>
+
+        <div class="policy">
+          <h2>Jobs and temporary storage</h2>
+          <p>
+            Uploaded files live in a temporary work directory on the PaperLab host. Every job has a time
+            limit (two hours by default) and the server sweeps expired work automatically. Download
+            anything you want to keep before the window closes.
+          </p>
+          <p>
+            If you deploy PaperLab yourself, files stay on your server. The hosted instance uses the same
+            engine and the same expiry rules.
+          </p>
+
+          <h2>Google Drive is optional</h2>
+          <p>
+            You can connect a Google Drive account from a PDF tool page to import a PDF or save an output.
+            Nothing is connected until you choose it, and every tool still works with local files.
+          </p>
+          <ul>
+            <li>PaperLab requests the narrow <code>drive.file</code> scope. It can see files you pick in Google's Picker and files PaperLab creates — not the rest of your Drive.</li>
+            <li>Google Identity Services issues the access token. It is kept in this browser tab's <code>sessionStorage</code> and is never sent to the PaperLab API or stored in a database.</li>
+            <li>An imported PDF is downloaded by your browser from Google, then uploaded to PaperLab like any local file. A saved output travels from PaperLab to your browser, then to Google.</li>
+            <li>Disconnecting revokes the token and clears it from the tab. Closing the tab also ends the session.</li>
+            <li>PaperLab cannot list your Drive, read unpicked files, or keep access after you disconnect.</li>
+          </ul>
+
+          <h2>What PaperLab does not do</h2>
+          <ul>
+            <li>No PaperLab account, document library, or cloud file history.</li>
+            <li>No analytics or advertising trackers on these pages.</li>
+            <li>No selling or sharing of file contents.</li>
+            <li>No watermarks or locked exports.</li>
+          </ul>
+
+          <h2>Contact</h2>
+          <p>
+            PaperLab is open source. Questions or reports can go to the
+            <a href="https://github.com/c0d3h01/papperlab" target="_blank" rel="noopener">GitHub repository</a>.
+          </p>
+          <p class="policy-date mono">Last updated October 2026.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>

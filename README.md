@@ -93,6 +93,20 @@ Without an AI provider, summaries and chat answers use local extraction and retr
 
 `web/` is plain ES modules with no build step. Gin serves it when `PAPERLAB_SERVE_WEB=1`. To serve it from a different origin, set the API origin in `web/assets/js/config.js`, with `?api=https://...`, or in `localStorage.paperlab_api`. If the API requires a key, store it in `localStorage.paperlab_api_key`.
 
+### Google Drive (optional)
+
+Drive import/export stays hidden until public Google identifiers are set in `web/assets/js/config.js`:
+
+```js
+window.PAPERLAB_GOOGLE = {
+  clientId: "….apps.googleusercontent.com",
+  apiKey: "…",
+  appId: "…", // Cloud project number
+};
+```
+
+In Google Cloud, enable the Drive API and Google Picker API, configure an External OAuth consent screen with the `drive.file` scope, create a Web OAuth client with the site and localhost JavaScript origins, and restrict the API key to those origins plus the Drive/Picker APIs. The front end uses the GIS token model, so there is no client secret and no server-side token storage; tokens live in the tab's `sessionStorage`.
+
 ## Checks
 
 ```sh
@@ -102,6 +116,7 @@ git diff --exit-code go.mod go.sum
 go vet ./...
 go test -race ./...
 go build ./...
+node --test web/assets/js/google-drive.test.mjs
 ```
 
 The Docker image is the full-fidelity target because it includes LibreOffice and Chromium; a bare Go install may report those engines as unavailable.

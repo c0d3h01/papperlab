@@ -127,13 +127,13 @@ function buildFooter() {
     "div",
     { class: "footer-statement" },
     h("div", { class: "footer-brand" }, brand()),
-    h("p", { class: "footer-lede", text: "A calm, complete workshop for the documents that matter. No sign-up, no dark patterns, no watermarks on your work." }),
+    h("p", { class: "footer-lede", text: "A calm, complete workshop for the documents that matter. No dark patterns, no watermarks on your work." }),
     h(
       "div",
       { class: "footer-badges" },
       h("span", { class: "badge-mono" }, h("span", { class: "dot dot-blue" }), "LOCAL-FIRST"),
       h("span", { class: "badge-mono" }, h("span", { class: "dot dot-yellow" }), "41 TOOLS"),
-      h("span", { class: "badge-mono" }, h("span", { class: "dot dot-magenta" }), "NO ACCOUNT")
+      h("span", { class: "badge-mono" }, h("span", { class: "dot dot-magenta" }), "OPTIONAL CLOUD")
     )
   );
   const columns = h("div", { class: "footer-columns" });
@@ -156,7 +156,7 @@ function buildFooter() {
         ["Studio", "studio.html"],
         ["Chat with PDF", "chat.html"],
         ["How it works", "index.html#how"],
-        ["Privacy", "index.html#privacy"],
+        ["Privacy", "privacy.html"],
         ["API health", "index.html#status"],
       ],
     },
@@ -164,7 +164,7 @@ function buildFooter() {
       title: "Good to know",
       links: [
         ["Files expire after 2 hours", "index.html#privacy"],
-        ["No account required", "index.html#how"],
+        ["Cloud connections", "privacy.html"],
         ["Open API", "index.html#api"],
         ["Deploy your own", "index.html#api"],
         ["Sponsor on GitHub", "https://github.com/sponsors/c0d3h01"],

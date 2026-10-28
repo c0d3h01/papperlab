@@ -41,6 +41,7 @@ const paths = {
   search: '<circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/>',
   upload: '<path d="M12 16V4M8 8l4-4 4 4M4 16v4h16v-4"/>',
   download: '<path d="M12 4v12M8 12l4 4 4-4M4 18v2h16v-2"/>',
+  drive: '<path d="M9 3h6l6 10-3 5H6l-3-5zM9 3l6 10M15 3L9 13"/>',
   close: '<path d="M5 5l14 14M19 5L5 19"/>',
   chevron: '<path d="M9 6l6 6-6 6"/>',
   check: '<path d="M4 12l5 5L20 6"/>',

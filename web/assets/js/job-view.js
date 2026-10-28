@@ -7,6 +7,7 @@ import {
   ApiError,
 } from "./api.js";
 import { icon } from "./icons.js";
+import { googleConfigured, saveBlobToDrive } from "./google-drive.js";
 import {
   h,
   formatBytes,
@@ -73,6 +74,35 @@ async function downloadOutput(url, name, button) {
       button.disabled = false;
       button.innerHTML = old;
     }
+  }
+}
+
+async function saveOutput(url, name, button) {
+  const old = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML = `<span class="spinner" aria-hidden="true"></span> Saving`;
+  try {
+    const blob = await fetchOutput(url);
+    const saved = await saveBlobToDrive(blob, name, {
+      onProgress: (progress) => {
+        button.innerHTML = `<span class="spinner" aria-hidden="true"></span> Saving ${Math.round(progress * 100)}%`;
+      },
+    });
+    button.innerHTML = `<span class="icon-wrap">${icon("check", 15)}</span> Saved`;
+    const message = `Saved to ${saved.name || name} in Google Drive.`;
+    if (saved.webViewLink) {
+      toast(message, "success", 7000, { label: "Open in Drive", href: saved.webViewLink });
+    } else {
+      toast(message, "success", 5000);
+    }
+    setTimeout(() => {
+      button.disabled = false;
+      button.innerHTML = old;
+    }, 4000);
+  } catch (error) {
+    button.disabled = false;
+    button.innerHTML = old;
+    toast(error.message || "Could not save to Google Drive.", "error");
   }
 }
 
@@ -331,6 +361,18 @@ function resultOutputs(job) {
       h("span", { html: icon("download", 15) }),
       "Download"
     );
+    const drive = googleConfigured()
+      ? h(
+          "button",
+          {
+            class: "btn btn-ghost btn-sm",
+            type: "button",
+            onclick: () => saveOutput(url, output.name, drive),
+          },
+          h("span", { html: icon("drive", 15) }),
+          "Save to Drive"
+        )
+      : null;
     list.append(
       h(
         "div",
@@ -355,7 +397,8 @@ function resultOutputs(job) {
             h("span", { html: icon("eye", 15) }),
             "Preview"
           ),
-          download
+          download,
+          drive
         )
       )
     );

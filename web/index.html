@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PaperLab · Every PDF task, on one quiet workbench</title>
-  <meta name="description" content="PaperLab is an independent PDF workshop: merge, split, compress, convert, edit, sign, redact, OCR and ask questions. 41 tools, no account, files expire automatically.">
+  <meta name="description" content="PaperLab is an independent PDF workshop: merge, split, compress, convert, edit, sign, redact, OCR and ask questions. 41 tools, optional cloud import, files expire automatically.">
   <meta name="theme-color" content="#eef0ee">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
@@ -23,7 +23,7 @@
           <div class="hero-kicker">
             <span class="eyebrow">Independent PDF workshop</span>
             <span class="hero-rule" aria-hidden="true"></span>
-            <span class="mono micro">41 tools / no account</span>
+            <span class="mono micro">41 tools / local files</span>
           </div>
           <h1 class="hero-title">
             Every PDF task,<br>
@@ -46,7 +46,7 @@
           </div>
           <dl class="hero-stats">
             <div><dt>Tools</dt><dd>41</dd></div>
-            <div><dt>Sign-ups</dt><dd>Zero</dd></div>
+            <div><dt>Cloud</dt><dd>Optional</dd></div>
             <div><dt>File expiry</dt><dd>2 hrs</dd></div>
             <div><dt>Watermarks</dt><dd>None</dd></div>
           </dl>
@@ -177,7 +177,7 @@
             <span class="eyebrow">How it works</span>
             <h2 class="section-title">Three moves. Then it is done.</h2>
           </div>
-          <p class="section-lede">No accounts, no onboarding, no “upgrade to export”. Just a clean hand-off between you and the engine.</p>
+          <p class="section-lede">No onboarding, no “upgrade to export”. Just a clean hand-off between you and the engine.</p>
         </div>
         <ol class="steps">
           <li class="step">
@@ -215,12 +215,13 @@
           <span class="eyebrow">Privacy &amp; housekeeping</span>
           <h2 class="section-title">Your files are guests, not inventory.</h2>
           <p class="section-lede">
-            Uploads live in a temporary work directory and are removed after the job window closes. No accounts,
-            no document library, no training corpus. When you deploy PaperLab yourself, the files never leave your server.
+            Uploads live in a temporary work directory and are removed after the job window closes. No document
+            library, no training corpus. When you deploy PaperLab yourself, the files never leave your server.
           </p>
+          <a class="section-link" href="privacy.html">Read the policy <span data-icon="arrow"></span></a>
           <div class="privacy-points">
             <div><span class="mono">01</span><strong>Expiring jobs</strong><p>Every job has a TTL. The default is two hours; the server sweeps expired work automatically.</p></div>
-            <div><span class="mono">02</span><strong>No third-party uploads</strong><p>Processing engines run on the same host. AI and translation are optional and off unless configured.</p></div>
+            <div><span class="mono">02</span><strong>Cloud only when asked</strong><p>Processing engines run on the same host. Google Drive is optional: you connect it, pick the files, and the browser talks to Google directly. AI and translation are off unless configured.</p></div>
             <div><span class="mono">03</span><strong>You own the output</strong><p>No added watermarks, no locked exports, no quiet re-encoding of your originals.</p></div>
           </div>
         </div>

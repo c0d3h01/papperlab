@@ -143,13 +143,22 @@ function toastRoot() {
   return root;
 }
 
-export function toast(message, type = "info", timeout = 5200) {
+export function toast(message, type = "info", timeout = 5200, action = null) {
   const root = toastRoot();
   const node = h(
     "div",
     { class: `toast toast-${type}`, role: type === "error" ? "alert" : "status" },
     h("span", { class: "toast-icon", html: icon(type === "error" ? "warning" : type === "success" ? "check" : "spark", 17) }),
     h("span", { class: "toast-message", text: message }),
+    action
+      ? h("a", {
+          class: "toast-action",
+          href: action.href,
+          target: "_blank",
+          rel: "noopener",
+          text: action.label,
+        })
+      : null,
     h("button", { class: "toast-close", type: "button", "aria-label": "Dismiss notification", html: icon("close", 14) })
   );
   const close = () => {
