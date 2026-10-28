@@ -1313,6 +1313,9 @@ body.nav-open {
    ========================================================================== */
 
 .studio-callout {
+  /* Always a dark plate, in both themes. */
+  --paper: #f7f8f5;
+  --ink: #14171b;
   position: relative;
   background: var(--ink);
   color: var(--paper);
