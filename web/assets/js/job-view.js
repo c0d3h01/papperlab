@@ -7,7 +7,7 @@ import {
   ApiError,
 } from "./api.js";
 import { icon } from "./icons.js";
-import { googleConfigured, saveBlobToDrive } from "./google-drive.js";
+import { ensureDriveToken, googleConfigured, saveBlobToDrive } from "./google-drive.js";
 import {
   h,
   formatBytes,
@@ -82,6 +82,8 @@ async function saveOutput(url, name, button) {
   button.disabled = true;
   button.innerHTML = `<span class="spinner" aria-hidden="true"></span> Saving`;
   try {
+    // Ask for consent before the download; a delayed popup can be blocked.
+    await ensureDriveToken();
     const blob = await fetchOutput(url);
     const saved = await saveBlobToDrive(blob, name, {
       onProgress: (progress) => {

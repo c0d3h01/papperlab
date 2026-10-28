@@ -10,6 +10,7 @@ import {
   isOversize,
   findOrCreateFolder,
   uploadBlob,
+  saveBlobToDrive,
 } from "./google-drive.js";
 
 test("acceptsPDF allows empty and PDF accepts", () => {
@@ -37,6 +38,7 @@ test("uploadChunks splits on the chunk size with an exclusive end", () => {
   ]);
   assert.deepEqual(uploadChunks(8, 8), [{ start: 0, end: 8 }]);
   assert.deepEqual(uploadChunks(0, 8), []);
+  assert.throws(() => uploadChunks(10, 0), RangeError);
 });
 
 test("driveFolderQuery escapes quotes and backslashes", () => {
@@ -119,4 +121,81 @@ test("uploadBlob opens a resumable session and sends chunk ranges", async () => 
   assert.equal(new Headers(calls[1].init.headers).get("Content-Range"), "bytes 0-1/5");
   assert.equal(new Headers(calls[2].init.headers).get("Content-Range"), "bytes 2-3/5");
   assert.equal(new Headers(calls[3].init.headers).get("Content-Range"), "bytes 4-4/5");
+});
+
+test("uploadBlob retries a 5xx chunk once", async () => {
+  const calls = [];
+  const fetchImpl = async (url) => {
+    calls.push(String(url));
+    if (calls.length === 1) {
+      return new Response(null, { status: 200, headers: { Location: "https://upload.example/session" } });
+    }
+    if (calls.length === 2) return new Response(null, { status: 503 });
+    return new Response(JSON.stringify({ id: "f1", name: "out.pdf" }), { status: 200 });
+  };
+  const saved = await uploadBlob("token", new Blob(["abcde"]), "out.pdf", "folder1", {
+    fetchImpl,
+    chunkSize: 8,
+  });
+  assert.equal(saved.id, "f1");
+  assert.equal(calls.length, 3);
+});
+
+test("saveBlobToDrive re-authenticates once after a 401", async () => {
+  const previousGoogle = globalThis.google;
+  const previousStorage = globalThis.sessionStorage;
+  const previousConfig = globalThis.PAPERLAB_GOOGLE;
+  const store = new Map([
+    ["paperlab.google.token", JSON.stringify({ accessToken: "old", expiresAt: Date.now() + 60_000 })],
+  ]);
+  globalThis.sessionStorage = {
+    getItem: (key) => store.get(key) ?? null,
+    setItem: (key, value) => store.set(key, value),
+    removeItem: (key) => store.delete(key),
+  };
+  globalThis.PAPERLAB_GOOGLE = { clientId: "client" };
+  let tokenRequests = 0;
+  globalThis.google = {
+    accounts: {
+      oauth2: {
+        initTokenClient({ callback }) {
+          return {
+            requestAccessToken() {
+              tokenRequests++;
+              callback({ access_token: "fresh", expires_in: 3600 });
+            },
+          };
+        },
+      },
+    },
+  };
+
+  const auth = [];
+  let folderCalls = 0;
+  const fetchImpl = async (url, init = {}) => {
+    auth.push(new Headers(init.headers).get("Authorization"));
+    if (String(url).includes("uploadType=resumable")) {
+      return new Response(null, { status: 200, headers: { Location: "https://upload.example/session" } });
+    }
+    if (String(url).includes("drive/v3/files?")) {
+      folderCalls++;
+      if (folderCalls === 1) return new Response(null, { status: 401 });
+      return new Response(JSON.stringify({ files: [{ id: "folder1" }] }), { status: 200 });
+    }
+    return new Response(
+      JSON.stringify({ id: "f1", name: "out.pdf", webViewLink: "https://drive.google.com/f1" }),
+      { status: 200 }
+    );
+  };
+
+  try {
+    const saved = await saveBlobToDrive(new Blob(["abc"]), "out.pdf", { fetchImpl });
+    assert.equal(saved.id, "f1");
+    assert.equal(tokenRequests, 1);
+    assert.deepEqual(auth.slice(0, 2), ["Bearer old", "Bearer fresh"]);
+  } finally {
+    globalThis.google = previousGoogle;
+    globalThis.sessionStorage = previousStorage;
+    globalThis.PAPERLAB_GOOGLE = previousConfig;
+  }
 });

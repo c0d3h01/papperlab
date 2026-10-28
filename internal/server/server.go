@@ -117,6 +117,13 @@ func (s *Server) serveWeb() {
 			})
 		}
 	}
+	privacy := filepath.Join(webDir, "privacy.html")
+	if _, err := os.Stat(privacy); err == nil {
+		s.router.GET("/privacy", func(c *gin.Context) {
+			c.Header("Cache-Control", "no-cache")
+			c.File(privacy)
+		})
+	}
 	s.router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
 		if strings.HasPrefix(path, "/api/") || strings.HasPrefix(path, "/api") {

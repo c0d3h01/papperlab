@@ -48,6 +48,7 @@ export function tokenFresh(token, now = Date.now()) {
 }
 
 export function uploadChunks(size, chunkSize = CHUNK_SIZE) {
+  if (!(chunkSize > 0)) throw new RangeError("chunkSize must be positive");
   const chunks = [];
   for (let start = 0; start < size; start += chunkSize) {
     chunks.push({ start, end: Math.min(start + chunkSize, size) });
@@ -116,23 +117,29 @@ function loadScript(src) {
     script.src = src;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Google Drive is unavailable right now."));
+    script.onerror = () => {
+      scriptPromises.delete(src);
+      script.remove();
+      reject(new Error("Google Drive is unavailable right now."));
+    };
     document.head.append(script);
   });
   scriptPromises.set(src, promise);
   return promise;
 }
 
-async function loadGoogle() {
-  await Promise.all([loadScript(GIS_SRC), loadScript(GAPI_SRC)]);
+async function loadIdentity() {
+  if (globalThis.google?.accounts?.oauth2) return;
+  await loadScript(GIS_SRC);
   if (!globalThis.google?.accounts?.oauth2) {
     throw new Error("Google Drive is unavailable right now.");
   }
 }
 
 async function loadPicker() {
-  await loadGoogle();
+  await loadIdentity();
   if (globalThis.google?.picker) return;
+  await loadScript(GAPI_SRC);
   await new Promise((resolve, reject) => {
     globalThis.gapi.load("picker", {
       callback: resolve,
@@ -167,13 +174,18 @@ async function ensureToken() {
   const stored = readToken();
   if (tokenFresh(stored)) return stored.accessToken;
   if (!tokenPromise) {
-    tokenPromise = loadGoogle()
+    tokenPromise = loadIdentity()
       .then(requestToken)
       .finally(() => {
         tokenPromise = null;
       });
   }
   return tokenPromise;
+}
+
+export async function ensureDriveToken() {
+  if (!googleConfigured()) throw new Error("Google Drive is not configured.");
+  return ensureToken();
 }
 
 async function withAuthRetry(fn) {
@@ -200,23 +212,19 @@ async function driveRequest(token, url, init = {}, fetchImpl = globalThis.fetch)
 }
 
 async function fetchWithRetry(url, init, fetchImpl, attempts = 3) {
-  let last;
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       const response = await fetchImpl(url, init);
       if (response.status >= 500 && attempt < attempts - 1) {
-        last = response;
         await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
         continue;
       }
       return response;
     } catch (error) {
       if (attempt === attempts - 1) throw error;
-      last = error;
       await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
     }
   }
-  return last;
 }
 
 export async function findOrCreateFolder(token, { fetchImpl = globalThis.fetch } = {}) {
@@ -304,11 +312,19 @@ export async function uploadBlob(
   throw new Error("Drive did not finish the upload.");
 }
 
-export async function saveBlobToDrive(blob, name, { onProgress } = {}) {
+let folderPromise = null;
+
+export async function saveBlobToDrive(blob, name, { onProgress, fetchImpl = globalThis.fetch } = {}) {
   if (!googleConfigured()) throw new Error("Google Drive is not configured.");
   return withAuthRetry(async (token) => {
-    const folderId = await findOrCreateFolder(token);
-    return uploadBlob(token, blob, name, folderId, { onProgress });
+    if (!folderPromise) {
+      folderPromise = findOrCreateFolder(token, { fetchImpl }).catch((error) => {
+        folderPromise = null;
+        throw error;
+      });
+    }
+    const folderId = await folderPromise;
+    return uploadBlob(token, blob, name, folderId, { onProgress, fetchImpl });
   });
 }
 
@@ -316,15 +332,20 @@ export async function saveBlobToDrive(blob, name, { onProgress } = {}) {
 /* Picker + import                                                            */
 
 async function openPicker({ multiple = false } = {}) {
-  await loadPicker();
   const config = getConfig();
   if (!config.apiKey || !config.appId) {
     throw new Error("Google Drive is not configured.");
   }
+  // Consent first: a popup opened after the picker scripts load can lose the
+  // click's user activation and be blocked.
   const token = await ensureToken();
+  await loadPicker();
 
   return new Promise((resolve, reject) => {
     let picker;
+    const view = new globalThis.google.picker.DocsView().setMimeTypes("application/pdf");
+    const listMode = globalThis.google.picker.DocsViewMode?.LIST;
+    if (listMode) view.setMode(listMode);
     const builder = new globalThis.google.picker.PickerBuilder()
       .setOAuthToken(token)
       .setDeveloperKey(config.apiKey)
@@ -338,9 +359,7 @@ async function openPicker({ multiple = false } = {}) {
           resolve([]);
         }
       })
-      .addView(
-        new globalThis.google.picker.DocsView().setMimeTypes("application/pdf")
-      );
+      .addView(view);
     if (multiple) {
       builder.enableFeature(globalThis.google.picker.Feature.MULTISELECT_ENABLED);
     }
@@ -353,45 +372,71 @@ async function openPicker({ multiple = false } = {}) {
   });
 }
 
-export async function importFromDrive({ multiple = false, maxUploadMB = 0 } = {}) {
+export async function importFromDrive({
+  multiple = false,
+  maxUploadMB = 0,
+  maxFiles = Infinity,
+  onPicked,
+} = {}) {
   if (!googleConfigured()) throw new Error("Google Drive is not configured.");
   const docs = await openPicker({ multiple });
-  if (!docs.length) return { files: [], skipped: 0, cancelled: true };
+  if (!docs.length) {
+    return { files: [], skipped: 0, oversize: 0, unreadable: 0, overflow: 0, cancelled: true };
+  }
 
-  const token = await ensureToken();
+  const room = Math.max(0, maxFiles);
+  const picked = docs.slice(0, room);
+  const overflow = docs.length - picked.length;
+  onPicked?.(picked.length);
+
   const files = [];
-  let skipped = 0;
+  let oversize = 0;
+  let unreadable = 0;
 
-  for (const doc of docs) {
+  for (const doc of picked) {
     if (isOversize(doc.sizeBytes, maxUploadMB)) {
-      skipped++;
+      oversize++;
       continue;
     }
     try {
-      const response = await driveRequest(
-        token,
-        `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(doc.id)}?alt=media`
-      );
-      const blob = await response.blob();
+      const blob = await withAuthRetry(async (token) => {
+        const response = await driveRequest(
+          token,
+          `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(doc.id)}?alt=media`
+        );
+        return response.blob();
+      });
       files.push(
         new File([blob], doc.name || "document.pdf", {
           type: doc.mimeType || "application/pdf",
           lastModified: Date.now(),
         })
       );
-    } catch (error) {
-      if (error instanceof DriveAuthError) clearToken();
-      skipped++;
+    } catch {
+      unreadable++;
     }
   }
 
-  return { files, skipped, cancelled: false };
+  return {
+    files,
+    skipped: oversize + unreadable + overflow,
+    oversize,
+    unreadable,
+    overflow,
+    cancelled: false,
+  };
 }
 
 export async function disconnectDrive() {
   const stored = readToken();
   clearToken();
-  if (!stored?.accessToken || !globalThis.google?.accounts?.oauth2) return;
+  folderPromise = null;
+  if (!stored?.accessToken) return;
+  try {
+    await loadIdentity();
+  } catch {
+    return;
+  }
   await new Promise((resolve) => {
     globalThis.google.accounts.oauth2.revoke(stored.accessToken, resolve);
   });
@@ -402,11 +447,15 @@ export async function disconnectDrive() {
 
 export function mountImportBar(
   container,
-  { maxFiles = 1, getMaxUploadMB = () => 0, onFiles = () => {} } = {}
+  { maxFiles = 1, getMaxUploadMB = () => 0, getRoom = () => maxFiles, onFiles = () => {} } = {}
 ) {
   if (!googleConfigured()) return null;
 
-  const status = h("span", { class: "cloud-status", text: "Optional · PDFs only" });
+  const status = h("span", {
+    class: "cloud-status",
+    text: "Optional · PDFs only",
+    "aria-live": "polite",
+  });
   const disconnect = h("button", {
     class: "btn btn-ghost btn-sm",
     type: "button",
@@ -444,6 +493,11 @@ export function mountImportBar(
   };
 
   action.addEventListener("click", async () => {
+    const room = Math.max(0, getRoom());
+    if (!room) {
+      toast(`This tool already has ${maxFiles} file${maxFiles === 1 ? "" : "s"}.`, "info");
+      return;
+    }
     const label = action.innerHTML;
     action.disabled = true;
     action.innerHTML = `<span class="spinner" aria-hidden="true"></span> Opening Drive…`;
@@ -451,11 +505,27 @@ export function mountImportBar(
       const result = await importFromDrive({
         multiple: maxFiles > 1,
         maxUploadMB: getMaxUploadMB(),
+        maxFiles: room,
+        onPicked(count) {
+          action.innerHTML = `<span class="spinner" aria-hidden="true"></span> Importing ${count} file${count === 1 ? "" : "s"}…`;
+        },
       });
       if (result.files.length) onFiles(result.files);
-      if (result.skipped) {
+      if (result.oversize) {
         toast(
-          `${result.skipped} file${result.skipped === 1 ? "" : "s"} skipped.`,
+          `${result.oversize} file${result.oversize === 1 ? "" : "s"} larger than the ${getMaxUploadMB()} MB limit were skipped.`,
+          "info"
+        );
+      }
+      if (result.unreadable) {
+        toast(
+          `${result.unreadable} file${result.unreadable === 1 ? "" : "s"} could not be read.`,
+          "error"
+        );
+      }
+      if (result.overflow) {
+        toast(
+          `${result.overflow} file${result.overflow === 1 ? "" : "s"} skipped: this tool accepts ${maxFiles}.`,
           "info"
         );
       }
@@ -482,3 +552,7 @@ export function mountImportBar(
   refresh();
   return bar;
 }
+
+// Load the identity script before the first click so the consent popup opens
+// inside the browser's user-activation window.
+if (googleConfigured()) loadIdentity().catch(() => {});

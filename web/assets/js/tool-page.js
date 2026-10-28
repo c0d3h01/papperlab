@@ -258,6 +258,7 @@ function buildLayout(state) {
     mountImportBar(dropHost, {
       maxFiles: tool.maxFiles || 1,
       getMaxUploadMB: () => state.configData?.maxUploadMB || 0,
+      getRoom: () => Math.max(0, (tool.maxFiles || 1) - state.drop.files.length),
       onFiles(files) {
         const { files: next, skipped } = capFiles(state.drop.files, files, tool.maxFiles || 1);
         state.drop.setFiles(next);
