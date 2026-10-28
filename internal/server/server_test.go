@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -42,6 +43,21 @@ func TestAPIKeyMiddleware(t *testing.T) {
 				t.Fatalf("status = %d, want %d", rec.Code, tc.want)
 			}
 		})
+	}
+}
+
+func TestServeWebExtensionlessHTML(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	s := &Server{cfg: config.Config{WebDir: "../../web", ServeWeb: true}, router: gin.New()}
+	s.serveWeb()
+
+	rec := httptest.NewRecorder()
+	s.router.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/privacy", nil))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
+	if !strings.Contains(rec.Body.String(), "Privacy · PaperLab") {
+		t.Fatal("extensionless /privacy did not serve privacy.html")
 	}
 }
 

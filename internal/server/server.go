@@ -117,13 +117,6 @@ func (s *Server) serveWeb() {
 			})
 		}
 	}
-	privacy := filepath.Join(webDir, "privacy.html")
-	if _, err := os.Stat(privacy); err == nil {
-		s.router.GET("/privacy", func(c *gin.Context) {
-			c.Header("Cache-Control", "no-cache")
-			c.File(privacy)
-		})
-	}
 	s.router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
 		if strings.HasPrefix(path, "/api/") || strings.HasPrefix(path, "/api") {
@@ -142,6 +135,11 @@ func (s *Server) serveWeb() {
 					c.Header("Cache-Control", "public, max-age=31536000, immutable")
 				}
 				c.File(candidate)
+				return
+			}
+			if st, err := os.Stat(candidate + ".html"); err == nil && !st.IsDir() {
+				c.Header("Cache-Control", "no-cache")
+				c.File(candidate + ".html")
 				return
 			}
 		}
