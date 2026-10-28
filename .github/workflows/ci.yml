@@ -17,6 +17,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: Check formatting
         run: |
           files=$(gofmt -l cmd internal scripts)
@@ -33,5 +36,7 @@ jobs:
         run: go vet ./...
       - name: Test
         run: go test -race ./...
+      - name: Test front end
+        run: node --test web/assets/js/google-drive.test.mjs
       - name: Build
         run: go build ./...

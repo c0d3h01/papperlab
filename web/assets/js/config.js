@@ -8,5 +8,15 @@
  * You can also override it at runtime with:
  *   ?api=https://api.example
  * or by setting localStorage.paperlab_api.
+ *
+ * Google Drive is optional. Fill these public identifiers to enable it;
+ * leave the client ID empty to hide every Drive affordance.
  */
-window.PAPERLAB_API = window.PAPERLAB_API || "";
+if (typeof window !== "undefined") {
+  window.PAPERLAB_API = window.PAPERLAB_API || "";
+  window.PAPERLAB_GOOGLE = window.PAPERLAB_GOOGLE || {
+    clientId: "",
+    apiKey: "",
+    appId: "",
+  };
+}
