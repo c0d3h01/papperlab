@@ -105,7 +105,7 @@ window.PAPERLAB_GOOGLE = {
 };
 ```
 
-In Google Cloud, enable the Drive API and Google Picker API, configure an External OAuth consent screen with the `drive.file` scope, create a Web OAuth client with the site and localhost JavaScript origins, and restrict the API key to those origins plus `https://docs.google.com/*` and the Drive/Picker APIs. The front end uses the GIS token model, so there is no client secret and no server-side token storage; tokens live in the tab's `sessionStorage`.
+In Google Cloud, enable the Drive API and Google Picker API, configure an External OAuth consent screen with the `drive.file` scope, create a Web OAuth client with the site and localhost JavaScript origins, register `https://<site>/privacy` as the consent screen's privacy policy URL, and restrict the API key to those origins plus `https://docs.google.com/*` and the Drive/Picker APIs. The front end uses the GIS token model, so there is no client secret and no server-side token storage; tokens live in the tab's `sessionStorage`.
 
 ## Checks
 
