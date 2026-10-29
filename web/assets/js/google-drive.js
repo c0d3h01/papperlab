@@ -1,15 +1,17 @@
 /*
- * Optional Google Drive import/export.
+ * Optional Google sign-in and Drive import/export.
  *
- * The module is inert until PAPERLAB_GOOGLE carries a client ID. Tokens stay in
- * sessionStorage; nothing here talks to the PaperLab API.
+ * The module is inert until PAPERLAB_GOOGLE carries a client ID. Tokens and the
+ * display-only profile stay in sessionStorage; nothing here talks to the
+ * PaperLab API.
  */
 
 import "./config.js";
 import { h, toast } from "./ui.js";
 import { icon } from "./icons.js";
 
-const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+export const GOOGLE_SCOPES = "openid email profile https://www.googleapis.com/auth/drive.file";
+export const PROFILE_KEY = "paperlab.google.profile";
 const FOLDER_NAME = "PaperLab";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 const TOKEN_KEY = "paperlab.google.token";
@@ -31,6 +33,14 @@ class DriveError extends Error {
   constructor(status) {
     super(`Drive request failed (${status}).`);
     this.name = "DriveError";
+    this.status = status;
+  }
+}
+
+export class GoogleProfileError extends Error {
+  constructor(status) {
+    super(`Google profile request failed (${status}).`);
+    this.name = "GoogleProfileError";
     this.status = status;
   }
 }
@@ -80,11 +90,27 @@ function getConfig() {
   return globalThis.PAPERLAB_GOOGLE || {};
 }
 
-function readToken() {
+export function readGoogleToken() {
   try {
     return JSON.parse(sessionStorage.getItem(TOKEN_KEY) || "null");
   } catch {
     return null;
+  }
+}
+
+export function readGoogleProfile() {
+  try {
+    return JSON.parse(sessionStorage.getItem(PROFILE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+export function writeGoogleProfile(profile) {
+  try {
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  } catch {
+    // The profile is display-only; the session still works without it.
   }
 }
 
@@ -93,6 +119,7 @@ function writeToken(response) {
   const token = {
     accessToken: response.access_token,
     expiresAt: Date.now() + lifetime * 1000,
+    scope: response.scope || GOOGLE_SCOPES,
   };
   try {
     sessionStorage.setItem(TOKEN_KEY, JSON.stringify(token));
@@ -108,6 +135,30 @@ function clearToken() {
   } catch {
     // Nothing to clear.
   }
+}
+
+export function clearGoogleSession() {
+  clearToken();
+  try {
+    sessionStorage.removeItem(PROFILE_KEY);
+  } catch {
+    // Nothing to clear.
+  }
+  folderPromise = null;
+}
+
+function announceAccount() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("paperlab:account"));
+  }
+}
+
+export async function fetchGoogleProfile(token, { fetchImpl = globalThis.fetch } = {}) {
+  const response = await fetchImpl("https://openidconnect.googleapis.com/v1/userinfo", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new GoogleProfileError(response.status);
+  return response.json();
 }
 
 function loadScript(src) {
@@ -154,7 +205,7 @@ function requestToken() {
   return new Promise((resolve, reject) => {
     const client = globalThis.google.accounts.oauth2.initTokenClient({
       client_id: config.clientId,
-      scope: DRIVE_SCOPE,
+      scope: GOOGLE_SCOPES,
       callback: (response) => {
         if (response?.error) {
           reject(new Error(response.error_description || "Google Drive connection was cancelled."));
@@ -171,7 +222,7 @@ function requestToken() {
 }
 
 async function ensureToken() {
-  const stored = readToken();
+  const stored = readGoogleToken();
   if (tokenFresh(stored)) return stored.accessToken;
   if (!tokenPromise) {
     tokenPromise = loadIdentity()
@@ -428,9 +479,9 @@ export async function importFromDrive({
 }
 
 export async function disconnectDrive() {
-  const stored = readToken();
-  clearToken();
-  folderPromise = null;
+  const stored = readGoogleToken();
+  clearGoogleSession();
+  announceAccount();
   if (!stored?.accessToken) return;
   try {
     await loadIdentity();
@@ -487,7 +538,7 @@ export function mountImportBar(
   container.append(bar);
 
   const refresh = () => {
-    const connected = tokenFresh(readToken());
+    const connected = tokenFresh(readGoogleToken());
     status.textContent = connected ? "Connected · PDFs only" : "Optional · PDFs only";
     disconnect.hidden = !connected;
   };

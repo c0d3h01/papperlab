@@ -11,12 +11,24 @@ import {
   findOrCreateFolder,
   uploadBlob,
   saveBlobToDrive,
+  GOOGLE_SCOPES,
+  PROFILE_KEY,
+  GoogleProfileError,
+  fetchGoogleProfile,
+  disconnectDrive,
 } from "./google-drive.js";
 
 test("acceptsPDF allows empty and PDF accepts", () => {
   assert.equal(acceptsPDF(""), true);
   assert.equal(acceptsPDF(".pdf,application/pdf"), true);
   assert.equal(acceptsPDF(".docx"), false);
+});
+
+test("the consent requests identity and Drive file access together", () => {
+  assert.equal(
+    GOOGLE_SCOPES,
+    "openid email profile https://www.googleapis.com/auth/drive.file"
+  );
 });
 
 test("googleConfigured requires a client id", () => {
@@ -197,5 +209,59 @@ test("saveBlobToDrive re-authenticates once after a 401", async () => {
     globalThis.google = previousGoogle;
     globalThis.sessionStorage = previousStorage;
     globalThis.PAPERLAB_GOOGLE = previousConfig;
+  }
+});
+
+test("fetchGoogleProfile reads userinfo with the bearer token", async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    calls.push({ url, init });
+    return new Response(JSON.stringify({ name: "Ada", email: "ada@example.com" }), { status: 200 });
+  };
+  const profile = await fetchGoogleProfile("tok", { fetchImpl });
+  assert.deepEqual(profile, { name: "Ada", email: "ada@example.com" });
+  assert.equal(calls[0].url, "https://openidconnect.googleapis.com/v1/userinfo");
+  assert.equal(new Headers(calls[0].init.headers).get("Authorization"), "Bearer tok");
+});
+
+test("fetchGoogleProfile exposes the HTTP status", async () => {
+  const fetchImpl = async () => new Response("", { status: 401 });
+  await assert.rejects(fetchGoogleProfile("tok", { fetchImpl }), (error) => {
+    return error instanceof GoogleProfileError && error.status === 401;
+  });
+});
+
+test("disconnectDrive clears the token and cached profile", async () => {
+  const previousGoogle = globalThis.google;
+  const previousStorage = globalThis.sessionStorage;
+  const store = new Map([
+    ["paperlab.google.token", JSON.stringify({ accessToken: "tok", expiresAt: Date.now() + 60_000 })],
+    [PROFILE_KEY, JSON.stringify({ name: "Ada" })],
+  ]);
+  globalThis.sessionStorage = {
+    getItem: (key) => store.get(key) ?? null,
+    setItem: (key, value) => store.set(key, value),
+    removeItem: (key) => store.delete(key),
+  };
+  let revoked = "";
+  globalThis.google = {
+    accounts: {
+      oauth2: {
+        revoke(token, callback) {
+          revoked = token;
+          callback();
+        },
+      },
+    },
+  };
+
+  try {
+    await disconnectDrive();
+    assert.equal(store.has("paperlab.google.token"), false);
+    assert.equal(store.has(PROFILE_KEY), false);
+    assert.equal(revoked, "tok");
+  } finally {
+    globalThis.google = previousGoogle;
+    globalThis.sessionStorage = previousStorage;
   }
 });
