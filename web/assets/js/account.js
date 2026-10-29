@@ -10,11 +10,14 @@ import {
   disconnectDrive,
   ensureDriveToken,
   fetchGoogleProfile,
+  googleConfigured,
   readGoogleProfile,
   readGoogleToken,
   tokenFresh,
   writeGoogleProfile,
 } from "./google-drive.js";
+import { h, toast } from "./ui.js";
+import { googleG, icon } from "./icons.js";
 
 export const ACCOUNT_EVENT = "paperlab:account";
 
@@ -110,4 +113,179 @@ export async function signIn({ fetchImpl } = {}) {
 
 export async function signOut() {
   await disconnectDrive();
+}
+
+/* -------------------------------------------------------------------------- */
+/* Header account slot                                                        */
+
+function loginHref() {
+  const path = `${location.pathname}${location.search}`;
+  if (/\/login(?:\.html)?\/?$/.test(location.pathname)) return "login.html";
+  return `login.html?next=${encodeURIComponent(path)}`;
+}
+
+function avatar(profile, size = 32) {
+  const wrap = h("span", { class: `account-avatar account-avatar-${size}` });
+  const fallback = () => h("span", { class: "account-avatar-fallback", text: initials(profile.name) });
+  if (!profile.picture) {
+    wrap.append(fallback());
+    return wrap;
+  }
+  const img = h("img", {
+    src: profile.picture,
+    alt: "",
+    width: size,
+    height: size,
+    referrerpolicy: "no-referrer",
+  });
+  img.addEventListener("error", () => img.replaceWith(fallback()));
+  wrap.append(img);
+  return wrap;
+}
+
+export function mountAccountButton(container) {
+  if (!googleConfigured()) {
+    container.hidden = true;
+    return null;
+  }
+  container.hidden = false;
+
+  let cleanup = () => {};
+
+  function render() {
+    cleanup();
+    cleanup = () => {};
+
+    const profile = getAccount();
+    if (!profile) {
+      container.replaceChildren(
+        h(
+          "a",
+          {
+            class: "account-signin",
+            href: loginHref(),
+            "aria-label": "Sign in with Google",
+            title: "Sign in with Google",
+          },
+          h("span", { html: googleG(16) }),
+          h("span", { class: "account-label", text: "Sign in" })
+        )
+      );
+      return;
+    }
+
+    const menu = h(
+      "div",
+      { class: "account-menu", role: "menu", hidden: true, "aria-label": "Google account" },
+      h(
+        "div",
+        { class: "account-menu-head" },
+        avatar(profile, 40),
+        h(
+          "div",
+          { class: "account-menu-id" },
+          h("strong", { class: "account-menu-name", text: profile.name }),
+          profile.email ? h("span", { class: "account-menu-email", text: profile.email }) : null
+        )
+      ),
+      h(
+        "div",
+        { class: "account-menu-row" },
+        h("span", { class: "account-dot", "aria-hidden": "true" }),
+        "Google Drive connected"
+      ),
+      h(
+        "div",
+        { class: "account-menu-links" },
+        h(
+          "a",
+          { class: "account-menu-link", href: "login.html", role: "menuitem" },
+          "Manage Google Drive",
+          h("span", { html: icon("chevron", 14) })
+        ),
+        h(
+          "a",
+          { class: "account-menu-link", href: "privacy.html", role: "menuitem" },
+          "Privacy",
+          h("span", { html: icon("external", 13) })
+        )
+      ),
+      h("button", {
+        class: "account-menu-signout",
+        type: "button",
+        role: "menuitem",
+        text: "Sign out",
+        onclick: handleSignOut,
+      })
+    );
+
+    const button = h(
+      "button",
+      {
+        class: "account-button",
+        type: "button",
+        "aria-haspopup": "menu",
+        "aria-expanded": "false",
+        "aria-label": `Google account: ${profile.name}`,
+        title: profile.email || profile.name,
+      },
+      avatar(profile, 32),
+      h("span", { class: "account-dot", "aria-hidden": "true" })
+    );
+
+    let onPointer;
+    let onKey;
+    const close = ({ focus = false } = {}) => {
+      if (menu.hidden) return;
+      menu.hidden = true;
+      button.setAttribute("aria-expanded", "false");
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+      if (focus) button.focus();
+    };
+    const open = () => {
+      if (!menu.hidden) return;
+      menu.hidden = false;
+      button.setAttribute("aria-expanded", "true");
+      onPointer = (event) => {
+        if (!container.contains(event.target)) close();
+      };
+      onKey = (event) => {
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        close({ focus: true });
+      };
+      document.addEventListener("pointerdown", onPointer);
+      document.addEventListener("keydown", onKey);
+    };
+
+    cleanup = () => close();
+    button.addEventListener("click", () => {
+      if (menu.hidden) open();
+      else close({ focus: true });
+    });
+    menu.addEventListener("click", (event) => {
+      if (event.target.closest("a")) close();
+    });
+
+    async function handleSignOut() {
+      const action = menu.querySelector(".account-menu-signout");
+      action.disabled = true;
+      action.textContent = "Signing out…";
+      try {
+        await signOut();
+        toast("Signed out of Google.", "success");
+      } catch (error) {
+        toast(error.message || "Could not sign out.", "error");
+        action.disabled = false;
+        action.textContent = "Sign out";
+      }
+    }
+
+    container.replaceChildren(button, menu);
+  }
+
+  render();
+  window.addEventListener(ACCOUNT_EVENT, render);
+  return container;
 }

@@ -1,6 +1,7 @@
 import { icon } from "./icons.js";
 import { $, h, initTheme, applyTheme, currentTheme, hydrateIcons } from "./ui.js";
 import { health, API_BASE } from "./api.js";
+import { mountAccountButton } from "./account.js";
 
 const NAV = [
   { href: "tools.html", label: "Tools", key: "tools" },
@@ -59,6 +60,7 @@ function buildHeader(active) {
     h("span", { class: "engine-label", text: "Checking" })
   );
 
+  const accountSlot = h("span", { class: "account-slot" });
   const actions = h(
     "div",
     { class: "header-actions" },
@@ -70,12 +72,7 @@ function buildHeader(active) {
       "aria-label": "Switch theme",
       html: icon(currentTheme() === "dark" ? "sun" : "moon", 18),
     }),
-    h(
-      "a",
-      { class: "btn btn-ink btn-sm header-cta", href: "tools.html" },
-      "All tools",
-      h("span", { class: "btn-arrow", html: icon("arrow", 15) })
-    ),
+    accountSlot,
     h("button", {
       class: "icon-button nav-toggle",
       type: "button",
@@ -85,6 +82,7 @@ function buildHeader(active) {
     })
   );
   inner.append(actions);
+  mountAccountButton(accountSlot);
   header.append(inner);
 
   const mobile = h("div", { class: "mobile-nav", hidden: true });
