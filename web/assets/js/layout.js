@@ -10,6 +10,68 @@ const NAV = [
   { href: "index.html#how", label: "How it works", key: "how" },
 ];
 
+const ENGINE_ROWS = [
+  ["poppler", "Poppler"],
+  ["ghostscript", "Ghostscript"],
+  ["qpdf", "qpdf"],
+  ["tesseract", "Tesseract"],
+  ["chrome", "Chrome"],
+  ["libreoffice", "LibreOffice"],
+];
+const CORE_ENGINES = ENGINE_ROWS.slice(0, 3);
+
+function buildEngineStatus() {
+  const bars = h("span", { class: "engine-bars", "aria-hidden": "true" });
+  for (const [key] of CORE_ENGINES) {
+    bars.append(h("span", { class: "engine-bar", "data-engine": key }));
+  }
+
+  const list = h("ul", { class: "engine-list" });
+  for (const [key, label] of ENGINE_ROWS) {
+    list.append(
+      h(
+        "li",
+        { class: "engine-row", "data-engine": key },
+        h("span", { class: "engine-row-dot", "aria-hidden": "true" }),
+        h("span", { class: "engine-row-name", text: label }),
+        h("span", { class: "engine-row-state", text: "—" })
+      )
+    );
+  }
+
+  const card = h(
+    "div",
+    { class: "engine-card" },
+    h(
+      "div",
+      { class: "engine-card-head" },
+      h("span", { class: "engine-card-title", text: "Processing engines" }),
+      h("span", { class: "engine-version mono", text: "API" })
+    ),
+    list,
+    h(
+      "a",
+      { class: "engine-card-link", href: "index.html#status" },
+      "API health",
+      h("span", { html: icon("arrow", 12) })
+    )
+  );
+
+  return h(
+    "div",
+    {
+      class: "engine-status",
+      "data-engine-status": "",
+      tabindex: "0",
+      title: "Checking the processing API",
+      "aria-label": "Checking the processing API",
+    },
+    bars,
+    h("span", { class: "engine-label", text: "Checking" }),
+    card
+  );
+}
+
 function brandMark(size = 30) {
   return `<svg class="brand-mark-svg" width="${size}" height="${size}" viewBox="0 0 32 32" fill="none" aria-hidden="true">
     <path d="M3 11V3h8M21 3h8v8M29 21v8h-8M11 29H3v-8" stroke="currentColor" stroke-width="1.6"/>
@@ -53,12 +115,7 @@ function buildHeader(active) {
   }
   inner.append(nav);
 
-  const status = h(
-    "span",
-    { class: "engine-status", "data-engine-status": "", title: "Checking the processing API" },
-    h("span", { class: "engine-dot" }),
-    h("span", { class: "engine-label", text: "Checking" })
-  );
+  const status = buildEngineStatus();
 
   const accountSlot = h("span", { class: "account-slot" });
   const actions = h(
@@ -204,18 +261,48 @@ async function updateEngineStatus() {
     nodes.forEach((node) => {
       node.dataset.tone = tone;
       node.title = title || label;
+      node.setAttribute("aria-label", title || label);
       const text = node.querySelector(".engine-label");
       if (text) text.textContent = label;
     });
   };
+  const paint = (engines, version) => {
+    nodes.forEach((node) => {
+      for (const [key] of ENGINE_ROWS) {
+        const on = Boolean(engines[key]);
+        const bar = node.querySelector(`.engine-bar[data-engine="${key}"]`);
+        if (bar) bar.dataset.state = on ? "on" : "off";
+        const row = node.querySelector(`.engine-row[data-engine="${key}"]`);
+        if (!row) continue;
+        row.dataset.state = on ? "on" : "off";
+        row.querySelector(".engine-row-state").textContent = on ? "Ready" : "Missing";
+      }
+      const label = node.querySelector(".engine-version");
+      if (label) label.textContent = version;
+    });
+  };
+
+  nodes.forEach((node) => {
+    node.querySelectorAll(".engine-bar, .engine-row").forEach((el) => delete el.dataset.state);
+    node.querySelectorAll(".engine-row-state").forEach((el) => (el.textContent = "—"));
+    const version = node.querySelector(".engine-version");
+    if (version) version.textContent = "API";
+  });
   set("pending", "Checking", "Checking the processing API");
+
   try {
     const data = await health();
     const engines = data.engines || {};
-    const core = ["poppler", "ghostscript", "qpdf"].filter((k) => engines[k]).length;
-    if (core === 3) set("ok", "Engines ready", `API ${data.version || ""} · Poppler, Ghostscript and qpdf are online`);
-    else set("partial", "Limited engines", "Some document engines are unavailable on this server");
+    const version = data.version ? `API ${data.version}` : "API";
+    paint(engines, version);
+    const ready = CORE_ENGINES.filter(([key]) => engines[key]).length;
+    if (ready === CORE_ENGINES.length) {
+      set("ok", "Engines ready", `${version} · Poppler, Ghostscript and qpdf are online`);
+    } else {
+      set("partial", "Limited engines", `${ready} of 3 core document engines are online`);
+    }
   } catch (error) {
+    paint({}, "—");
     set("offline", "API offline", `${API_BASE || "Same origin"} could not be reached`);
   }
 }
@@ -238,6 +325,7 @@ export function setStatus(tone, label, title = "") {
   document.querySelectorAll("[data-engine-status]").forEach((node) => {
     node.dataset.tone = tone;
     node.title = title || label;
+    node.setAttribute("aria-label", title || label);
     const text = node.querySelector(".engine-label");
     if (text) text.textContent = label;
   });
