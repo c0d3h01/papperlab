@@ -93,9 +93,9 @@ Without an AI provider, summaries and chat answers use local extraction and retr
 
 `web/` is plain ES modules with no build step. Gin serves it when `PAPERLAB_SERVE_WEB=1`. To serve it from a different origin, set the API origin in `web/assets/js/config.js`, with `?api=https://...`, or in `localStorage.paperlab_api`. If the API requires a key, store it in `localStorage.paperlab_api_key`.
 
-### Google Drive (optional)
+### Google sign-in and Drive (optional)
 
-Drive import/export stays hidden until public Google identifiers are set in `web/assets/js/config.js`:
+The account button and Drive import/export stay hidden until public Google identifiers are set in `web/assets/js/config.js`:
 
 ```js
 window.PAPERLAB_GOOGLE = {
@@ -105,7 +105,7 @@ window.PAPERLAB_GOOGLE = {
 };
 ```
 
-In Google Cloud, enable the Drive API and Google Picker API, configure an External OAuth consent screen with the `drive.file` scope, create a Web OAuth client with the site and localhost JavaScript origins, register `https://<site>/privacy` as the consent screen's privacy policy URL, and restrict the API key to those origins plus `https://docs.google.com/*` and the Drive/Picker APIs. The front end uses the GIS token model, so there is no client secret and no server-side token storage; tokens live in the tab's `sessionStorage`.
+In Google Cloud, enable the Drive API and Google Picker API, configure an External OAuth consent screen with the `openid`, `email`, `profile`, and `https://www.googleapis.com/auth/drive.file` scopes, create a Web OAuth client with the site and localhost JavaScript origins, register `https://<site>/privacy` as the consent screen's privacy policy URL, and restrict the API key to those origins plus `https://docs.google.com/*` and the Drive/Picker APIs. The front end uses the GIS token model, so there is no client secret and no server-side token storage; the access token and the display-only profile (name, email, photo) live in the tab's `sessionStorage`. Disconnecting revokes the token and clears both.
 
 ## Checks
 

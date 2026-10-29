@@ -37,6 +37,6 @@ jobs:
       - name: Test
         run: go test -race ./...
       - name: Test front end
-        run: node --test web/assets/js/google-drive.test.mjs
+        run: node --test web/assets/js/*.test.mjs
       - name: Build
         run: go build ./...

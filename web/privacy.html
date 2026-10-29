@@ -42,16 +42,18 @@
             engine and the same expiry rules.
           </p>
 
-          <h2>Google Drive is optional</h2>
+          <h2>Google sign-in and Drive are optional</h2>
           <p>
-            You can connect a Google Drive account from a PDF tool page to import a PDF or save an output.
-            Nothing is connected until you choose it, and every tool still works with local files.
+            You can sign in with Google from the header or the account page to connect Google Drive
+            for PDF import and save. Nothing is connected until you choose it, and every tool still
+            works with local files.
           </p>
           <ul>
-            <li>PaperLab requests the narrow <code>drive.file</code> scope. It can see files you pick in Google's Picker and files PaperLab creates — not the rest of your Drive.</li>
-            <li>Google Identity Services issues the access token. It is kept in this browser tab's <code>sessionStorage</code> and is never sent to the PaperLab API or stored in a database.</li>
+            <li>PaperLab requests <code>openid</code>, <code>email</code>, <code>profile</code>, and the narrow <code>drive.file</code> scope in one consent. It can see the name, email, and profile photo attached to your Google account, plus files you pick in Google's Picker and files PaperLab creates — not the rest of your Drive.</li>
+            <li>Google Identity Services issues the access token. The token and the display profile (name, email, photo) are kept in this browser tab's <code>sessionStorage</code>. Neither is sent to the PaperLab API or stored in a database.</li>
+            <li>The profile is used only to show who is signed in. PaperLab does not create an account, send email, or build a user record from it.</li>
             <li>An imported PDF is downloaded by your browser from Google, then uploaded to PaperLab like any local file. A saved output travels from PaperLab to your browser, then to Google.</li>
-            <li>Disconnecting revokes the token and clears it from the tab. Closing the tab also ends the session.</li>
+            <li>Disconnecting revokes the token and clears the token and cached profile from the tab. Closing the tab also ends the session.</li>
             <li>PaperLab cannot list your Drive, read unpicked files, or keep access after you disconnect.</li>
           </ul>
 

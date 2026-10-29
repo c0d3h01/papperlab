@@ -9,8 +9,9 @@
  *   ?api=https://api.example
  * or by setting localStorage.paperlab_api.
  *
- * Google Drive is optional. Fill these public identifiers to enable it;
- * leave the client ID empty to hide every Drive affordance.
+ * Google sign-in and Drive are optional. Fill these public identifiers to
+ * enable them; leave the client ID empty to hide every account and Drive
+ * affordance.
  */
 if (typeof window !== "undefined") {
   window.PAPERLAB_API = window.PAPERLAB_API || "";
