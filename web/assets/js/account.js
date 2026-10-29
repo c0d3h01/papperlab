@@ -124,7 +124,7 @@ function loginHref() {
   return `login.html?next=${encodeURIComponent(path)}`;
 }
 
-function avatar(profile, size = 32) {
+export function accountAvatar(profile, size = 32) {
   const wrap = h("span", { class: `account-avatar account-avatar-${size}` });
   const fallback = () => h("span", { class: "account-avatar-fallback", text: initials(profile.name) });
   if (!profile.picture) {
@@ -180,7 +180,7 @@ export function mountAccountButton(container) {
       h(
         "div",
         { class: "account-menu-head" },
-        avatar(profile, 40),
+        accountAvatar(profile, 40),
         h(
           "div",
           { class: "account-menu-id" },
@@ -229,7 +229,7 @@ export function mountAccountButton(container) {
         "aria-label": `Google account: ${profile.name}`,
         title: profile.email || profile.name,
       },
-      avatar(profile, 32),
+      accountAvatar(profile, 32),
       h("span", { class: "account-dot", "aria-hidden": "true" })
     );
 

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · PaperLab</title>
+  <meta name="description" content="Sign in with Google to connect PaperLab to Google Drive for PDF import and save. No PaperLab account is created.">
+  <meta name="theme-color" content="#eef0ee">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <script type="module" src="assets/js/login.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="site-header"></div>
+
+  <main id="main">
+    <section class="section login-section">
+      <div class="page-shell">
+        <div class="login-grid">
+          <div class="login-card">
+            <span class="eyebrow">Account</span>
+            <h1 class="login-title">Sign in<br><em>with Google.</em></h1>
+            <p class="login-lede">
+              One consent connects your Google account for Drive import and save.
+              PaperLab creates no account and keeps no profile on its server.
+            </p>
+            <div id="login-panel" aria-live="polite"></div>
+          </div>
+
+          <aside class="login-aside" aria-label="About Google access">
+            <div class="login-aside-block">
+              <span class="eyebrow">What Google shares</span>
+              <h2>Two permissions, clearly bounded.</h2>
+              <ul class="login-facts">
+                <li>
+                  <span class="login-fact-mark" data-icon="check" data-icon-size="13"></span>
+                  <div>
+                    <strong>Your name, email and photo</strong>
+                    <span>Shown in the account menu. Never sent to the PaperLab API.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="login-fact-mark" data-icon="check" data-icon-size="13"></span>
+                  <div>
+                    <strong>Files you pick or PaperLab creates</strong>
+                    <span>The <code>drive.file</code> scope cannot list or read the rest of your Drive.</span>
+                  </div>
+                </li>
+                <li>
+                  <span class="login-fact-mark" data-icon="check" data-icon-size="13"></span>
+                  <div>
+                    <strong>Nothing else in your Drive</strong>
+                    <span>No full-Drive access, no background sync, no document library.</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="login-aside-block">
+              <span class="eyebrow">What stays in this tab</span>
+              <h2>No PaperLab account. No server session.</h2>
+              <p>
+                The Google token and display profile live in <code>sessionStorage</code>.
+                Disconnecting revokes the token and clears both.
+              </p>
+              <a class="text-link" href="privacy.html">
+                Read the privacy note
+                <span data-icon="arrow" data-icon-size="14"></span>
+              </a>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>
