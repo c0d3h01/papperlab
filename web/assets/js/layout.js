@@ -292,7 +292,11 @@ async function updateEngineStatus() {
 
   try {
     const data = await health();
-    const engines = data.engines || {};
+    // A static host can answer /api/health with its HTML fallback and a 200.
+    if (!data || typeof data !== "object" || !data.engines || typeof data.engines !== "object") {
+      throw new Error("Health response did not include engines");
+    }
+    const engines = data.engines;
     const version = data.version ? `API ${data.version}` : "API";
     paint(engines, version);
     const ready = CORE_ENGINES.filter(([key]) => engines[key]).length;
