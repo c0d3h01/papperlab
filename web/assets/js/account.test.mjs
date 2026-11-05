@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PROFILE_KEY } from "./google-drive.js";
+import { PROFILE_KEY, GOOGLE_SCOPES } from "./google-drive.js";
 import {
   initials,
   isGooglePicture,
@@ -174,9 +174,49 @@ test("signIn caches the profile returned by userinfo", async () => {
   }
 });
 
+test("signIn re-consents when a Drive-only token lacks identity scopes", async () => {
+  const storage = withStorage({
+    [TOKEN_KEY]: JSON.stringify({ accessToken: "drive-only", expiresAt: Date.now() + 60_000 }),
+  });
+  const previousGoogle = globalThis.google;
+  const previousConfig = globalThis.PAPERLAB_GOOGLE;
+  globalThis.PAPERLAB_GOOGLE = { clientId: "client" };
+  let requests = 0;
+  globalThis.google = {
+    accounts: {
+      oauth2: {
+        initTokenClient({ callback }) {
+          return {
+            requestAccessToken() {
+              requests++;
+              callback({ access_token: "fresh", expires_in: 3600, scope: GOOGLE_SCOPES });
+            },
+          };
+        },
+      },
+    },
+  };
+  const fetchImpl = async () =>
+    new Response(JSON.stringify({ name: "Ada", email: "ada@example.com" }), { status: 200 });
+  try {
+    const profile = await signIn({ fetchImpl });
+    assert.equal(profile.name, "Ada");
+    assert.equal(requests, 1);
+    assert.equal(JSON.parse(storage.store.get(TOKEN_KEY)).accessToken, "fresh");
+  } finally {
+    storage.restore();
+    globalThis.google = previousGoogle;
+    globalThis.PAPERLAB_GOOGLE = previousConfig;
+  }
+});
+
 test("signIn clears a Drive-only token when userinfo is forbidden", async () => {
   const storage = withStorage({
-    [TOKEN_KEY]: JSON.stringify({ accessToken: "old", expiresAt: Date.now() + 60_000 }),
+    [TOKEN_KEY]: JSON.stringify({
+      accessToken: "old",
+      expiresAt: Date.now() + 60_000,
+      scope: GOOGLE_SCOPES,
+    }),
     [PROFILE_KEY]: JSON.stringify({ name: "Old" }),
   });
   const previousConfig = globalThis.PAPERLAB_GOOGLE;

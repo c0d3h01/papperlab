@@ -90,6 +90,11 @@ function announceAccount() {
 }
 
 export async function signIn({ fetchImpl } = {}) {
+  const stored = readGoogleToken();
+  // Tokens from the Drive-only release cannot call userinfo; re-consent once.
+  if (tokenFresh(stored) && !String(stored.scope || "").split(/\s+/).includes("openid")) {
+    clearGoogleSession();
+  }
   const token = await ensureDriveToken();
   let data;
   try {
