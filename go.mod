@@ -3,7 +3,7 @@ module paperlab
 go 1.27.2
 
 require (
-	github.com/chromedp/chromedp v0.21.0
+	github.com/chromedp/chromedp v0.23.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-pdf/fpdf v0.9.0
 	github.com/pdfcpu/pdfcpu v0.16.3
@@ -15,7 +15,7 @@ require (
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
-	github.com/chromedp/cdproto v0.157.8 // indirect
+	github.com/chromedp/cdproto v0.159.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
